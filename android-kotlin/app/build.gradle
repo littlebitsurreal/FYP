@@ -71,7 +71,7 @@ dependencies {
 
     ktlint "com.github.shyiko:ktlint:0.15.0"
 
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'com.android.support:support-core-utils:27.0.2'
     implementation 'com.android.support:design:27.0.2'
