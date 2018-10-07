@@ -2,29 +2,23 @@ package com.example.skeleton
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.FrameLayout
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Consumer
-import io.reactivex.functions.Function
-import com.facebook.drawee.backends.pipeline.Fresco
-import com.example.skeleton.redux.ClientStore
-import com.example.skeleton.redux.ViewStore
-import com.example.skeleton.ui.LoginScreen
-import com.example.skeleton.ui.MainScreen
-import com.example.skeleton.ui.SplashScreen
 import com.example.skeleton.MainApplication.Companion.store
+import io.reactivex.disposables.CompositeDisposable
+import com.facebook.drawee.backends.pipeline.Fresco
+import com.example.skeleton.ui.StartScreen
+import com.example.skeleton.helper.PermissionHelper
+import com.example.skeleton.ui.MainScreen
 
 @Suppress("ConstantConditionIf")
 class MainActivity : AppCompatActivity() {
     private val mSubscriptions = CompositeDisposable()
     private var mRouter: Router? = null
     private var mStoreRetained: Boolean = false
-    private var mInSplash: Boolean = false
-    private var mShowingMain: Boolean = false
 
     //region Lifecycle
     //---------------------------------------------------------------
@@ -38,12 +32,13 @@ class MainActivity : AppCompatActivity() {
         val layout = FrameLayout(this)
         setContentView(layout)
         mRouter = Conductor.attachRouter(this, layout, savedInstanceState)
-        mInSplash = true
-        mShowingMain = false
-        if (AppConfig.SPLASH_DURATION == 0L) {
-            showAppContent()
+
+        Log.i("test", "${!PermissionHelper.hasAppUsagePermission(this)}  ${!store().view.state.agreeTermsConditions}")
+
+        if (!PermissionHelper.hasAppUsagePermission(this) || !store().view.state.agreeTermsConditions) {
+            mRouter?.setRoot(RouterTransaction.with(StartScreen()))
         } else {
-            mRouter?.setRoot(RouterTransaction.with(SplashScreen()))
+            mRouter?.setRoot(RouterTransaction.with(MainScreen()))
         }
     }
     override fun onStart() {
@@ -57,17 +52,6 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onResume() {
         super.onResume()
-        mSubscriptions.add(store().observe(store().client)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(mapLoginState)
-                .distinctUntilChanged()
-                .subscribe(consumeLoginState)
-        )
-        if (mInSplash) {
-            // Show main screen after a delay
-            window.decorView.postDelayed({ showAppContent() }, AppConfig.SPLASH_DURATION)
-        }
-        // TODO: resume login session here
     }
     override fun onPause() {
         super.onPause()
@@ -81,9 +65,6 @@ class MainActivity : AppCompatActivity() {
             MainApplication.releaseStore(this)
         }
     }
-    override fun onDestroy() {
-        super.onDestroy()
-    }
     //---------------------------------------------------------------
     //endregion
 
@@ -96,28 +77,4 @@ class MainActivity : AppCompatActivity() {
     }
     //---------------------------------------------------------------
     //endregion
-
-    //region Redux
-    //---------------------------------------------------------------
-    private val mapLoginState = Function<ClientStore.State, Boolean> { state ->
-        state.isLogined
-    }
-    private val consumeLoginState = Consumer<Boolean> { mapped ->
-        if (mInSplash) return@Consumer // skip if in splash screen
-        if (mShowingMain != mapped) {
-            mShowingMain = mapped
-            mRouter?.replaceTopController(RouterTransaction.with(if (mShowingMain) MainScreen() else LoginScreen()))
-        }
-    }
-    //---------------------------------------------------------------
-    //endregion
-
-    private fun showAppContent() {
-        if (mInSplash) {
-            mInSplash = false
-            mShowingMain = store().client.state.isLogined
-            mRouter?.replaceTopController(RouterTransaction.with(if (mShowingMain) MainScreen() else LoginScreen()))
-            store().dispatch(ViewStore.Action.SetTitle("Hello World"))
-        }
-    }
 }
