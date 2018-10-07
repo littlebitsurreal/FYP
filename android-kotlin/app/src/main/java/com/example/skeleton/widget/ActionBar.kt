@@ -124,10 +124,10 @@ class ActionBar : LinearLayout {
                 .setMargins(0, 0, dp(16), 0)
                 .build())
     }
-    fun addLeftView(view: View){
+    fun addLeftView(view: View) {
         mLeft.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon)).build())
     }
-    fun addRightView(view: View){
+    fun addRightView(view: View) {
         mRight.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon)).build())
     }
     //---------------------------------------------------------------
