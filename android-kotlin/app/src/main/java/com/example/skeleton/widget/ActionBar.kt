@@ -1,6 +1,7 @@
 package com.example.skeleton.widget
 
 import android.content.Context
+import android.graphics.Color
 import android.support.annotation.DrawableRes
 import android.support.annotation.StringRes
 import android.util.AttributeSet
@@ -53,16 +54,14 @@ class ActionBar : LinearLayout {
         bar.setPadding(dp(4), dp(4), dp(4), dp(4))
         bar.orientation = LinearLayout.HORIZONTAL
         bar.gravity = Gravity.CENTER_VERTICAL
+        bar.setBackgroundColor(color(R.color.primary))
         bar.addView(mLeft, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT).build())
         bar.addView(mCenter, LP.linear(0, LP.WRAP_CONTENT)
                 .setWeight(1)
                 .build())
         bar.addView(mRight, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT).build())
-        val line = View(context)
-        line.setBackgroundColor(0x60000000)
         orientation = LinearLayout.VERTICAL
         addView(bar, LP.linear(LP.MATCH_PARENT, dimen(R.dimen.actionbar_height)).build())
-        addView(line, LP.linear(LP.MATCH_PARENT, 1).build())
     }
     //---------------------------------------------------------------
     //endregion
@@ -71,11 +70,13 @@ class ActionBar : LinearLayout {
     //---------------------------------------------------------------
     private fun raiiTitle() {
         if (mTitle != null) return
-        mTitle = TextView(context)
-        mTitle?.gravity = Gravity.CENTER_HORIZONTAL
-        mTitle?.typeface = font(R.font.barlow_condensed_medium)
-        mTitle?.setTextColor(color(R.color.actionbar_title))
-        mTitle?.textSize = 20f
+        mTitle = TextView(context).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+            typeface = font(R.font.barlow_condensed_medium)
+            setTextColor(color(R.color.actionbar_title))
+            textSize = 20f
+            setTextColor(Color.WHITE)
+        }
         mCenter.addView(mTitle, LP.frame(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER).build())
     }
     fun setTitle(@StringRes title: Int) {
@@ -122,6 +123,12 @@ class ActionBar : LinearLayout {
         mRight.addView(view, 0, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
                 .setMargins(0, 0, dp(16), 0)
                 .build())
+    }
+    fun addLeftView(view: View){
+        mLeft.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon)).build())
+    }
+    fun addRightView(view: View){
+        mRight.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon)).build())
     }
     //---------------------------------------------------------------
     //endregion

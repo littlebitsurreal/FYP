@@ -95,12 +95,32 @@ object LP {
             mParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 1)
             return this
         }
+        fun alignParentCenter(): RelativeLayoutBuilder {
+            mParams.addRule(RelativeLayout.CENTER_IN_PARENT, 1)
+            return this
+        }
+        fun alignCenterHorizontal(): RelativeLayoutBuilder {
+            mParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 1)
+            return this
+        }
+        fun alignCenterVertical(): RelativeLayoutBuilder {
+            mParams.addRule(RelativeLayout.CENTER_VERTICAL, 1)
+            return this
+        }
         fun toLeftOf(id: Int): RelativeLayoutBuilder {
             mParams.addRule(RelativeLayout.LEFT_OF, id)
             return this
         }
         fun toRightOf(id: Int): RelativeLayoutBuilder {
             mParams.addRule(RelativeLayout.RIGHT_OF, id)
+            return this
+        }
+        fun aboveOf(id: Int): RelativeLayoutBuilder {
+            mParams.addRule(RelativeLayout.ABOVE, id)
+            return this
+        }
+        fun belowOf(id: Int): RelativeLayoutBuilder {
+            mParams.addRule(RelativeLayout.BELOW, id)
             return this
         }
         fun build(): RelativeLayout.LayoutParams {
