@@ -10,11 +10,13 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.bluelinelabs.conductor.RouterTransaction
+import com.example.skeleton.MainApplication.Companion.store
 import com.example.skeleton.R
 import com.example.skeleton.helper.LP
 import com.example.skeleton.helper.PermissionHelper
 import com.example.skeleton.helper.ResourceHelper.color
 import com.example.skeleton.helper.ResourceHelper.dp
+import com.example.skeleton.redux.ViewStore
 import com.example.skeleton.ui.base.BaseController
 
 class StartScreen : BaseController() {
@@ -102,6 +104,7 @@ class StartScreen : BaseController() {
 
     //region UI Events
     private val onStart = View.OnClickListener {
+        store().dispatch(ViewStore.Action.AgreeTermsConditions())
         if (PermissionHelper.hasAppUsagePermission(activity ?: return@OnClickListener)) {
             router.setRoot(RouterTransaction.with(MainScreen()))
         } else {

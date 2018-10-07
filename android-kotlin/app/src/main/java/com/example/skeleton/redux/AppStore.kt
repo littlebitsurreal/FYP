@@ -1,9 +1,11 @@
 package com.example.skeleton.redux
 
 import android.content.Context
+import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.ObservableOnSubscribe
+import org.json.JSONObject
 import redux.api.Store
 
 @Suppress("unused", "UNUSED_PARAMETER")
@@ -13,10 +15,25 @@ class AppStore {
 
     //region Pesistence
     fun load(context: Context) {
-        // TODO: Load from persistent stoage and fire restore actions
+
+        val pref = context.getSharedPreferences("redux", Context.MODE_PRIVATE)
+        try {
+            val saved = ViewStore.load(JSONObject(pref.getString("client", "")))
+            saved?.let { dispatch(ViewStore.Action._PresistenceRestore(it)) }
+        } catch (e: Exception) {
+            Log.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
+        }
     }
+
     fun save(context: Context) {
-        // TODO: Save state to persistent stoage
+        val pref = context.getSharedPreferences("redux", Context.MODE_PRIVATE).edit()
+        try {
+            val json = ViewStore.save(view.state)
+            pref.putString("client", json.toString(0))
+        } catch (e: Exception) {
+            Log.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
+        }
+        pref.apply()
     }
     //endregion
 
@@ -27,6 +44,7 @@ class AppStore {
             is ViewStore.Action -> view.dispatch(action)
         }
     }
+
     fun <S> observe(store: Store<S>): Observable<S> {
         return Observable.create(object : ObservableOnSubscribe<S> {
             private var mSubscribe: Store.Subscription? = null
