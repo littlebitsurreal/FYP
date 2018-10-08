@@ -8,14 +8,19 @@ import java.io.FileWriter
 
 @Suppress("MemberVisibilityCanBePrivate")
 object CsvHelper {
-    val usageHeader = arrayOf("appName", "startTime", "duration")
+    val usageHeader = arrayOf("packageName", "startTime", "duration")
+
     data class UsageRecord(
-            val appName: String = "",
+            val packageName: String = "",
             val starTime: Long = 0,
             val duration: Long = 0
     ) {
         fun toArray(): Array<String> {
-            return arrayOf(appName, starTime.toString(), duration.toString())
+            return arrayOf(packageName, starTime.toString(), duration.toString())
+        }
+
+        override fun toString(): String {
+            return "packageName: $packageName  startTime: ${CalanderHelper.getDate(starTime)}  duration: ${duration / 1000}s"
         }
     }
 
@@ -29,7 +34,6 @@ object CsvHelper {
             for (record in records) {
                 writer.writeRecord(record.toArray())
             }
-            Log.d("CsvHelper", "write to file ${file.path}  exist = $alreadyExist")
             writer.close()
             true
         } catch (e: Exception) {
@@ -38,21 +42,25 @@ object CsvHelper {
         }
     }
 
-    fun read(file: File): Boolean {
-        return try {
+    fun read(file: File): Array<UsageRecord> {
+        try {
             if (!file.canRead()) {
-                return false
+                Log.d("CsvHelper", "can't read file ${file.path}")
+                return arrayOf()
             }
+            val records = arrayListOf<UsageRecord>()
             val reader = CsvReader(file.path)
             reader.readHeaders()
             while (reader.readRecord()) {
-                Log.d("CsvHelper", reader.rawRecord)
+                val record = UsageRecord(reader.get(0), reader.get(1).toLong(), reader.get(2).toLong())
+                records.add(record)
+                Log.d("CsvHelper", "read $record")
             }
             reader.close()
-            true
+            return records.toTypedArray()
         } catch (e: Exception) {
             Log.e("CsvHelper", e.message + ": " + e.localizedMessage)
-            false
+            return arrayOf()
         }
     }
 }
