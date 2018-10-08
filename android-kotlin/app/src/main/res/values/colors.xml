@@ -2,7 +2,8 @@
 <resources>
     <color name="primary">#7c4dff</color>
     <color name="dark">#3f1dcb</color>
-    <color name="accent">#b47cff</color>
+    <color name="accent">#f0f0f0</color>
+    <color name="light">#b47cff</color>
     <color name="immersive_background">#88000000</color>
     <color name="white">#ffffffff</color>
     <!-- Action Bar -->

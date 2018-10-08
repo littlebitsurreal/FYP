@@ -19,4 +19,5 @@
     <string name="enable_done_title">Great!</string>
     <string name="enable_done_hint">You can now monitor your app usage</string>
     <string name="enable_title">Enable Monitor</string>
+    <string name="messageview_time_hint">You have used for %1$s</string>
 </resources>
