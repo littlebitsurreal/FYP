@@ -1,7 +1,6 @@
 package com.example.skeleton.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.support.annotation.DrawableRes
 import android.support.annotation.StringRes
 import android.util.AttributeSet
@@ -9,6 +8,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.example.skeleton.R
 import com.example.skeleton.helper.LP
@@ -18,7 +18,7 @@ import com.example.skeleton.helper.ResourceHelper.font
 import com.example.skeleton.helper.ResourceHelper.color
 
 @Suppress("unused", "UNUSED_PARAMETER")
-class ActionBar : LinearLayout {
+class ActionBar : RelativeLayout {
     private val mLeft: LinearLayout
     private val mRight: LinearLayout
     private val mCenter: FrameLayout
@@ -50,18 +50,11 @@ class ActionBar : LinearLayout {
         mRight.orientation = LinearLayout.HORIZONTAL
         mRight.gravity = Gravity.CENTER_VERTICAL
 
-        val bar = LinearLayout(context)
-        bar.setPadding(dp(4), dp(4), dp(4), dp(4))
-        bar.orientation = LinearLayout.HORIZONTAL
-        bar.gravity = Gravity.CENTER_VERTICAL
-        bar.setBackgroundColor(color(R.color.primary))
-        bar.addView(mLeft, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT).build())
-        bar.addView(mCenter, LP.linear(0, LP.WRAP_CONTENT)
-                .setWeight(1)
-                .build())
-        bar.addView(mRight, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT).build())
-        orientation = LinearLayout.VERTICAL
-        addView(bar, LP.linear(LP.MATCH_PARENT, dimen(R.dimen.actionbar_height)).build())
+        setPadding(dp(8), dp(8), dp(8), dp(8))
+        gravity = Gravity.CENTER_VERTICAL
+        addView(mLeft, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT).build())
+        addView(mCenter, LP.relative(LP.MATCH_PARENT, LP.WRAP_CONTENT).build())
+        addView(mRight, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT).alignParentEnd().build())
     }
     //---------------------------------------------------------------
     //endregion
@@ -73,9 +66,8 @@ class ActionBar : LinearLayout {
         mTitle = TextView(context).apply {
             gravity = Gravity.CENTER_HORIZONTAL
             typeface = font(R.font.barlow_condensed_medium)
-            setTextColor(color(R.color.actionbar_title))
-            textSize = 20f
-            setTextColor(Color.WHITE)
+            textSize = 22f
+            setTextColor(color(R.color.primary))
         }
         mCenter.addView(mTitle, LP.frame(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER).build())
     }

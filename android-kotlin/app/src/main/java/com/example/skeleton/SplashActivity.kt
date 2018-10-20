@@ -2,7 +2,6 @@ package com.example.skeleton
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.FrameLayout
@@ -29,7 +28,6 @@ class SplashActivity : AppCompatActivity() {
     }
     override fun onResume() {
         super.onResume()
-
 //        Handler().postDelayed({
 //            startActivity(Intent(this, MainActivity::class.java))
 //            finish()

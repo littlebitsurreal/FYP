@@ -20,4 +20,6 @@
     <string name="enable_done_hint">You can now monitor your app usage</string>
     <string name="enable_title">Enable Monitor</string>
     <string name="messageview_time_hint">You have used for %1$s</string>
+    <string name="main_usageoverview">USAGE\n<h1>%s</h1>\nTIME</string>
+    <string name="main_unlockoverview">UNLOCK\n<h2>%s</h2>\nCOUNT</string>
 </resources>
