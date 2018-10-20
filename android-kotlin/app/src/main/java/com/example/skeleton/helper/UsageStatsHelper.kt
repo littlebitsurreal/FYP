@@ -10,23 +10,20 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import java.io.File
 
-@Suppress("LiftReturnOrAssignment")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 object UsageStatsHelper {
     const val HOUR_24 = 1000 * 60 * 60 * 24L
-    private var mLastQueryTime: Long = 0
     private var mLastForegroundEvent: String? = null
     private var mLastTimeStamp: Long = 0
 
-    fun getForegroundEvent(context: Context, usageStatsManager: UsageStatsManager): UsageEvents.Event? {
-        val currentTime = System.currentTimeMillis()
-        val usageEvents = usageStatsManager.queryEvents(if (mLastQueryTime == 0L) currentTime - 5 * 1000 else mLastQueryTime, currentTime)
+    fun getLatestEvent(context: Context, usageStatsManager: UsageStatsManager, startTime: Long, endTime: Long): UsageEvents.Event? {
+        val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
         val event = UsageEvents.Event()
         var foregroundEvent: UsageEvents.Event? = null
-        mLastQueryTime = currentTime
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event)
-            Log.i("getForegroundEvent", "${event.packageName}  timeStamp: ${CalanderHelper.getDate(event.timeStamp)}  type: ${event.eventType}")
+            Log.i("getLatestEvent", "${event.packageName}  timeStamp: ${CalanderHelper.getDate(event.timeStamp)}  type: ${event.eventType}")
 
             if (event.eventType == MOVE_TO_BACKGROUND && mLastForegroundEvent == event.packageName) {
                 mLastForegroundEvent?.let {
@@ -43,6 +40,7 @@ object UsageStatsHelper {
     }
 
     fun recordUsage(context: Context, packageName: String, startTime: Long, duration: Long) {
+        Log.i("recordUsage", "$packageName: ${duration / 1000}s")
         val filename = CalanderHelper.getDayCondensed(System.currentTimeMillis())
         val path = File(context.filesDir.path + "/" + filename)
         CsvHelper.write(path, listOf(CsvHelper.UsageRecord(packageName, startTime, duration)))

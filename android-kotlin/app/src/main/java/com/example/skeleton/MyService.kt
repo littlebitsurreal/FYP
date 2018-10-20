@@ -3,6 +3,7 @@ package com.example.skeleton
 import android.app.job.JobParameters
 import android.app.job.JobService
 import android.app.usage.UsageStatsManager
+import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -11,6 +12,8 @@ import java.util.Timer
 import java.util.TimerTask
 
 class MyService : JobService() {
+    private var mLastQueryTime: Long = 0
+
     // region Life cycle
     override fun onStartJob(params: JobParameters?): Boolean {
         Log.d("MyService", "onStartJob")
@@ -34,8 +37,8 @@ class MyService : JobService() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         Log.d("MyService", "onDestroy")
+        super.onDestroy()
     }
     // endregion
 
@@ -43,9 +46,16 @@ class MyService : JobService() {
         val timer = Timer(true)
         var lastForegroundPackageName: String? = null
         val usageStatsManager = getSystemService(AppCompatActivity.USAGE_STATS_SERVICE) as UsageStatsManager
-        val timerTask = object : TimerTask() {
+
+        mLastQueryTime = getSharedPreferences("MyService", Context.MODE_PRIVATE).getLong("mLastQueryTime", 0L)
+
+        val monitoringTask = object : TimerTask() {
             override fun run() {
-                val event = UsageStatsHelper.getForegroundEvent(this@MyService, usageStatsManager)
+                val currentTime = System.currentTimeMillis()
+                val event = UsageStatsHelper.getLatestEvent(this@MyService, usageStatsManager, mLastQueryTime, currentTime)
+
+                mLastQueryTime = currentTime
+
                 if (event != null && event.packageName != null) {
                     if (lastForegroundPackageName != event.packageName) {
                         notifyAppChange(event.packageName)
@@ -54,7 +64,15 @@ class MyService : JobService() {
                 }
             }
         }
-        timer.schedule(timerTask, 0, AppConfig.TIMER_CHECK_PERIOD)
+        val persistenceTask = object : TimerTask() {
+            override fun run() {
+                val pref = getSharedPreferences("MyService", Context.MODE_PRIVATE).edit()
+                pref.putLong("mLastQueryTime", mLastQueryTime)
+                pref.apply()
+            }
+        }
+        timer.schedule(monitoringTask, 0, AppConfig.TIMER_CHECK_PERIOD)
+        timer.schedule(persistenceTask, 0, 30000L)
     }
 
     private fun notifyAppChange(name: String) {
