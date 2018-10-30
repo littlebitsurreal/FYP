@@ -1,7 +1,6 @@
 package com.example.skeleton.redux
 
 import android.content.Context
-import android.util.Log
 import com.example.skeleton.helper.Logger
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
