@@ -57,7 +57,6 @@ class StartScreen : BaseController() {
         }
 
         startBtn.apply {
-            setBackgroundResource(R.drawable.btn_rounded)
             setBackgroundColor(Color.WHITE)
             setTextColor(R.color.primary)
             setText(R.string.start_startbutton)

@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import com.google.android.flexbox.FlexboxLayout
 
 //! LayoutParams Builder
 @Suppress("unused")
@@ -128,27 +127,6 @@ object LP {
         }
     }
 
-    // Flexbox
-    class FlexboxLayoutBuilder internal constructor(width: Int, height: Int) {
-        private val mParams = FlexboxLayout.LayoutParams(toSpec(width), toSpec(height))
-
-        fun setMargins(left: Int, top: Int, right: Int, bottom: Int): FlexboxLayoutBuilder {
-            mParams.setMargins(left, top, right, bottom)
-            return this
-        }
-        fun setBasisPercent(percent: Float): FlexboxLayoutBuilder {
-            mParams.flexBasisPercent = percent
-            return this
-        }
-        fun setAlignSelf(value: Int): FlexboxLayoutBuilder {
-            mParams.alignSelf = value
-            return this
-        }
-        fun build(): FlexboxLayout.LayoutParams {
-            return mParams
-        }
-    }
-
     fun vg(width: Int, height: Int): ViewGroupLayoutBuilder {
         return ViewGroupLayoutBuilder(width, height)
     }
@@ -166,8 +144,5 @@ object LP {
     }
     fun relative(width: Int, height: Int): RelativeLayoutBuilder {
         return RelativeLayoutBuilder(width, height)
-    }
-    fun flexbox(width: Int, height: Int): FlexboxLayoutBuilder {
-        return FlexboxLayoutBuilder(width, height)
     }
 }

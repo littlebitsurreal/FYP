@@ -2,14 +2,12 @@ package com.example.skeleton
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.FrameLayout
 import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.example.skeleton.MainApplication.Companion.store
 import io.reactivex.disposables.CompositeDisposable
-import com.facebook.drawee.backends.pipeline.Fresco
 import com.example.skeleton.ui.StartScreen
 import com.example.skeleton.helper.PermissionHelper
 import com.example.skeleton.ui.MainScreen
@@ -24,7 +22,6 @@ class MainActivity : AppCompatActivity() {
     //---------------------------------------------------------------
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Fresco.initialize(this)
         if (!mStoreRetained) {
             mStoreRetained = true
             MainApplication.retainStore(this)
@@ -32,8 +29,6 @@ class MainActivity : AppCompatActivity() {
         val layout = FrameLayout(this)
         setContentView(layout)
         mRouter = Conductor.attachRouter(this, layout, savedInstanceState)
-
-        Log.i("test", "${!PermissionHelper.hasAppUsagePermission(this)}  ${!store().view.state.agreeTermsConditions}")
 
         if (!PermissionHelper.hasAppUsagePermission(this) || !store().view.state.agreeTermsConditions) {
             mRouter?.setRoot(RouterTransaction.with(StartScreen()))
@@ -49,9 +44,6 @@ class MainActivity : AppCompatActivity() {
             MainApplication.retainStore(this)
         }
         super.onStart()
-    }
-    override fun onResume() {
-        super.onResume()
     }
     override fun onPause() {
         super.onPause()
