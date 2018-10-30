@@ -19,7 +19,9 @@
     <string name="enable_done_title">Great!</string>
     <string name="enable_done_hint">You can now monitor your app usage</string>
     <string name="enable_title">Enable Monitor</string>
-    <string name="messageview_time_hint">You have used for %1$s</string>
+    <string name="messageview_time_hint">You have used for %1$s min</string>
     <string name="main_usageoverview">USAGE\n<big><big>%s</big></big>\nTIME</string>
     <string name="main_unlockoverview">UNLOCK\n<big><big>%s</big></big>\nCOUNT</string>
+    <string name="setting_strictmode_title">Strict Mode</string>
+    <string name="setting_strictmode_content">You are not allowed to use app exceed usage limit in strict mode</string>
 </resources>
