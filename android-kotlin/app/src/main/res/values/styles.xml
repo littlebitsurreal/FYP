@@ -16,5 +16,20 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    
+    <!-- Transparent Window Activity -->
+    <style name="AppTheme.TransparentWindow" parent="Theme.AppCompat.Light.NoActionBar">
+        <!--
+        We want the translucent background painted by the root layout instead
+        of painted by the window.
+        -->
+        <item name="android:windowIsTranslucent">true</item>
+        
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+    </style>
 
 </resources>
