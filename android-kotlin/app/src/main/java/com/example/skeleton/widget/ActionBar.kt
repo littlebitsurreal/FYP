@@ -52,9 +52,9 @@ class ActionBar : RelativeLayout {
 
         setPadding(dp(8), dp(8), dp(8), dp(8))
         gravity = Gravity.CENTER_VERTICAL
-        addView(mLeft, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT).build())
-        addView(mCenter, LP.relative(LP.MATCH_PARENT, LP.WRAP_CONTENT).build())
-        addView(mRight, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT).alignParentEnd().build())
+        addView(mLeft, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT).alignCenterVertical().build())
+        addView(mCenter, LP.relative(LP.MATCH_PARENT, LP.WRAP_CONTENT).alignCenterVertical().build())
+        addView(mRight, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT).alignParentEnd().alignCenterVertical().build())
     }
     //---------------------------------------------------------------
     //endregion
@@ -90,37 +90,39 @@ class ActionBar : RelativeLayout {
     //---------------------------------------------------------------
     fun addLeftButton(@DrawableRes icon: Int, listener: View.OnClickListener) {
         val button = Button(context)
-        button.setIcon(icon, dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
+        button.setIcon(icon, LP.WRAP_CONTENT, LP.WRAP_CONTENT)
         button.setOnClickListener(listener)
-        mLeft.addView(button, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
+        button.elevation = 8f
+        mLeft.addView(button, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL)
                                 .setMargins(0, 0, dp(16), 0)
                                 .build())
     }
     fun addLeftPadding() {
         val view = View(context)
-        mLeft.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
+        mLeft.addView(view, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL)
                 .setMargins(0, 0, dp(16), 0)
                 .build())
     }
     fun addRightButton(@DrawableRes icon: Int, listener: View.OnClickListener) {
         val button = Button(context)
-        button.setIcon(icon, dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
+        button.setIcon(icon, LP.WRAP_CONTENT, LP.WRAP_CONTENT)
         button.setOnClickListener(listener)
-        mRight.addView(button, 0, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
+        button.elevation = 8f
+        mRight.addView(button, 0, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL)
                 .setMargins(0, 0, dp(16), 0)
                 .build())
     }
     fun addRightPadding() {
         val view = View(context)
-        mRight.addView(view, 0, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon))
+        mRight.addView(view, 0, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon), Gravity.CENTER_VERTICAL)
                 .setMargins(0, 0, dp(16), 0)
                 .build())
     }
     fun addLeftView(view: View) {
-        mLeft.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon)).build())
+        mLeft.addView(view, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL).build())
     }
     fun addRightView(view: View) {
-        mRight.addView(view, LP.linear(dimen(R.dimen.actionbar_icon), dimen(R.dimen.actionbar_icon)).build())
+        mRight.addView(view, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL).build())
     }
     //---------------------------------------------------------------
     //endregion
