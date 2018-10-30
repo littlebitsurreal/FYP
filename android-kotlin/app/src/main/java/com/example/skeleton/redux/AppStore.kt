@@ -2,6 +2,7 @@ package com.example.skeleton.redux
 
 import android.content.Context
 import android.util.Log
+import com.example.skeleton.helper.Logger
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.ObservableOnSubscribe
@@ -21,7 +22,7 @@ class AppStore {
             val saved = ViewStore.load(JSONObject(pref.getString("client", "")))
             saved?.let { dispatch(ViewStore.Action._PresistenceRestore(it)) }
         } catch (e: Exception) {
-            Log.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
+            Logger.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
         }
     }
 
@@ -31,7 +32,7 @@ class AppStore {
             val json = ViewStore.save(view.state)
             pref.putString("client", json.toString(0))
         } catch (e: Exception) {
-            Log.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
+            Logger.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
         }
         pref.apply()
     }

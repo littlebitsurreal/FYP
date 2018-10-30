@@ -7,64 +7,101 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import com.example.skeleton.model.UsageDigest
+import com.example.skeleton.model.UsageRecord
+import org.json.JSONObject
 import java.io.File
 
-@Suppress("MemberVisibilityCanBePrivate", "unused")
 object UsageStatsHelper {
     const val HOUR_24 = 1000 * 60 * 60 * 24L
     private var mLastForegroundEvent: String? = null
     private var mLastTimeStamp: Long = 0
-
-    fun getLatestEvent(context: Context, usageStatsManager: UsageStatsManager, startTime: Long, endTime: Long): UsageEvents.Event? {
+    
+    fun getLatestEvent(context: Context, usageStatsManager: UsageStatsManager, startTime: Long, endTime: Long): List<UsageRecord> {
+        val records = arrayListOf<UsageRecord>()
         val usageEvents = usageStatsManager.queryEvents(startTime, endTime)
         val event = UsageEvents.Event()
-        var foregroundEvent: UsageEvents.Event? = null
-
+        
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event)
-            Log.i("getLatestEvent", "${event.packageName}  timeStamp: ${CalanderHelper.getDate(event.timeStamp)}  type: ${event.eventType}")
-
-            if (event.eventType == MOVE_TO_BACKGROUND && mLastForegroundEvent == event.packageName) {
+            val packageName = event.packageName
+            val timeStamp = event.timeStamp
+            val eventType = event.eventType
+            
+            if (eventType == MOVE_TO_BACKGROUND && mLastForegroundEvent == packageName && timeStamp > mLastTimeStamp) {
                 mLastForegroundEvent?.let {
-                    recordUsage(context, it, mLastTimeStamp, event.timeStamp - mLastTimeStamp)
+                    recordUsage(context, it, mLastTimeStamp, timeStamp - mLastTimeStamp)
                 }
                 mLastForegroundEvent = null
-            } else if (event.eventType == MOVE_TO_FOREGROUND) {
-                mLastForegroundEvent = event.packageName
-                mLastTimeStamp = event.timeStamp
-                foregroundEvent = event
+            } else if (eventType == MOVE_TO_FOREGROUND) {
+                mLastForegroundEvent = packageName
+                mLastTimeStamp = timeStamp
+                records.add(UsageRecord(packageName, timeStamp, timeStamp - mLastTimeStamp))
             }
         }
-        return foregroundEvent
+        return records
     }
-
-    fun recordUsage(context: Context, packageName: String, startTime: Long, duration: Long) {
-        Log.i("recordUsage", "$packageName: ${duration / 1000}s")
-        val filename = CalanderHelper.getDayCondensed(System.currentTimeMillis())
+    
+    private fun recordUsage(context: Context, packageName: String, startTime: Long, duration: Long) {
+        Logger.d("recordUsage", "$packageName   from ${CalendarHelper.getDate(startTime)}  -  ${duration / 1000}s")
+        val filename = CalendarHelper.getDayCondensed(startTime)
         val path = File(context.filesDir.path + "/" + filename)
-        CsvHelper.write(path, listOf(CsvHelper.UsageRecord(packageName, startTime, duration)))
+        CsvHelper.write(path, listOf(UsageRecord(packageName, startTime, duration)))
     }
-
-    fun queryUsage(context: Context, interval: Long) {
+    
+    fun queryIntervalUsage(context: Context, duration: Long): ArrayList<UsageRecord> {
         val currentTime = System.currentTimeMillis()
-        val startTime = currentTime - interval
-        val records = arrayListOf<CsvHelper.UsageRecord>()
-
+        val startTime = currentTime - duration
+        val records = arrayListOf<UsageRecord>()
+        
         for (i in startTime..currentTime step HOUR_24) {
-            val filename = CalanderHelper.getDayCondensed(i)
+            val filename = CalendarHelper.getDayCondensed(i)
             val file = File(context.filesDir.path + "/" + filename)
             records.addAll(CsvHelper.read(file))
         }
-
-        Log.i("queryUsage", "today usage - ${records.sumBy { it.duration.toInt() } / 1000} seconds")
+        return records
     }
-
-    fun queryAllUsage(context: Context, interval: Long = HOUR_24 * 10): List<UsageStats> {
-        val currentTime = System.currentTimeMillis()
-        val usageStatsManager = context.getSystemService(AppCompatActivity.USAGE_STATS_SERVICE) as UsageStatsManager
-        val usageStats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - interval, currentTime)
-
-        return usageStats.sortedByDescending { it.totalTimeInForeground }
+    
+    fun getTodayUsageTime(context: Context): Long {
+        return queryTodayUsage(context).map { it.duration }.sum()
+    }
+    
+    fun queryNDayBeforeUsage(context: Context, n: Int): List<UsageRecord> {
+        val time = System.currentTimeMillis() - HOUR_24 * n
+        val filename = CalendarHelper.getDayCondensed(time)
+        val file = File(context.filesDir.path + "/" + filename)
+        return CsvHelper.read(file)
+    }
+    
+    fun queryTodayUsage(context: Context): List<UsageRecord> {
+        return queryNDayBeforeUsage(context, 0)
+    }
+    
+    fun query24hUsage(context: Context): List<UsageRecord> {
+        val time = System.currentTimeMillis() - HOUR_24
+        return queryIntervalUsage(context, HOUR_24).filter { it.starTime >= time }
+    }
+    
+    fun query7dayUsage(context: Context): List<UsageRecord> {
+        return queryIntervalUsage(context, HOUR_24 * 6)
+    }
+    
+    fun query30dayUsage(context: Context): List<UsageRecord> {
+        return queryIntervalUsage(context, HOUR_24 * 29)
+    }
+    
+    fun getAverageUsageTime(context: Context): Long {
+        val pref = context.getSharedPreferences(UsageDigest.TAG, Context.MODE_PRIVATE)
+        val all = pref.all
+        var sum = 0L
+        for ((_, value) in all) {
+            val t = UsageDigest.fromJson(JSONObject(value as? String)).totalTime
+            sum += t
+        }
+        if (sum == 0L || all.isEmpty()) {
+            return 60 * 60 * 1000
+        } else {
+            return (sum / all.size)
+        }
     }
 }
