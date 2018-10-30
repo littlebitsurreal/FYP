@@ -1,9 +1,14 @@
 package com.example.skeleton.ui
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.view.Gravity
+import android.view.MotionEvent
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import com.example.skeleton.R
 import com.example.skeleton.helper.LP
@@ -11,10 +16,14 @@ import com.example.skeleton.helper.PackageHelper.getAppIcon
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.model.UsageSummary
 
-class UsageSummaryView(context: Context) : LinearLayout(context) {
+class UsageSummaryView(context: Context, private var onClick: OnClickListener) : FrameLayout(context) {
+    val margin = dp(13)
+    val layout = LinearLayout(context)
     val icon = ImageView(context)
     val appName = TextView(context)
     val usageSummary = TextView(context)
+    val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
+    var packageName: String? = null
 
     init {
         setup()
@@ -22,22 +31,65 @@ class UsageSummaryView(context: Context) : LinearLayout(context) {
 
     private fun setup() {
         val contentContainer = LinearLayout(context)
+        val img = ImageView(context).apply { setImageDrawable(context.getDrawable(R.drawable.ic_chevron_right_black_24dp)) }
 
-        setPadding(dp(10), dp(10), dp(10), dp(10))
+        appName.apply {
+            textSize = 18f
+            setTextColor(Color.parseColor("#404040"))
+        }
+        progressBar.apply {
+            progressDrawable = context.getDrawable(R.drawable.custom_progress_bar_horizontal)
+            progressTintList = ColorStateList.valueOf(Color.RED)
+            elevation = 8f
+        }
+
+        usageSummary.apply {
+            textSize = 13f
+        }
 
         contentContainer.apply {
-            orientation = VERTICAL
+            orientation = LinearLayout.VERTICAL
             addView(appName)
+            addView(progressBar, LP.MATCH_PARENT, dp(10))
             addView(usageSummary)
         }
 
-        addView(icon, LP.linear(dp(50), dp(50), Gravity.CENTER_VERTICAL).build())
-        addView(contentContainer)
+        layout.apply {
+            addView(icon, LP.linear(dp(40), dp(40), Gravity.CENTER_VERTICAL)
+                    .setMargins(0, 0, margin * 2, 0)
+                    .build())
+            addView(contentContainer, LP.linear(LP.MATCH_PARENT, LP.WRAP_CONTENT)
+                    .build())
+            addView(img, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL).build())
+            background = resources.getDrawable(R.drawable.btn_rounded, null)
+            setBackgroundColor(Color.WHITE)
+            setPadding(dp(25), dp(12), dp(25), dp(12))
+            elevation = 6f
+
+            setOnTouchListener { v, event ->
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    v.elevation = 12f
+                } else if (event.action == MotionEvent.ACTION_CANCEL || event.action == MotionEvent.ACTION_UP) {
+                    v.elevation = 6f
+                }
+
+                if (event.action == MotionEvent.ACTION_UP) {
+                    onClick.onClick(v)
+                    return@setOnTouchListener false
+                }
+                true
+            }
+        }
+        addView(layout, LP.frame(LP.MATCH_PARENT, LP.WRAP_CONTENT)
+                .setMargins(dp(25), dp(8), dp(25), dp(8))
+                .build())
     }
 
-    fun bind(u: UsageSummary) {
+    fun bind(u: UsageSummary, progress: Int) {
         icon.setImageDrawable(getAppIcon(context, u.packageName))
         appName.text = u.appName
-        usageSummary.text = resources.getString(R.string.messageview_time_hint, u.useTimeAverage / 1000)
+        packageName = u.packageName
+        progressBar.progress = progress
+        usageSummary.text = resources.getString(R.string.messageview_time_hint, u.useTimeTotal / 1000 / 60)
     }
 }
