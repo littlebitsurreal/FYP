@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.support.v7.widget.CardView
 import android.support.v7.widget.SwitchCompat
 import android.text.SpannableString
@@ -38,7 +37,6 @@ import com.example.skeleton.helper.UsageStatsHelper
 import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.helper.UsageStatsHelper.getAverageUsageTime
 import com.example.skeleton.model.UsageDigest
-import com.example.skeleton.model.UsageDigest.Companion.TAG
 import com.example.skeleton.redux.ViewStore
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
@@ -73,10 +71,8 @@ class MainScreen : BaseController() {
         val yesterdayText = TextView(context)
         val yesterdayOverviewLayout = setupYesterdayOverview(context)
         val lineChartYesterday = GraphHelper.plotDailyLineChart(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
-//        val yesterdayGraphLayout2 = GraphHelper.plotLineChart2(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
         val divider2 = View(context)
         val overviewText = TextView(context)
-//        val barChart = plotBarChart2(context, System.currentTimeMillis())
         val barChart7Day = plot7DayBarChart(context, System.currentTimeMillis())
 
         todayText.apply {
@@ -118,13 +114,6 @@ class MainScreen : BaseController() {
             alpha = 0.6f
             textSize = 16f
         }
-        val pref = context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
-        pref.remove("20181030")
-        pref.remove("20181024")
-        pref.remove("20181025")
-        pref.remove("20181026")
-        pref.remove("20181023")
-        pref.apply()
 
         contentLayout.apply {
             setBackgroundColor(color(R.color.accent))
@@ -145,7 +134,7 @@ class MainScreen : BaseController() {
                     .setMargins(0, dp(10), 0, dp(20))
                     .build())
             addView(divider, LP.linear(LP.MATCH_PARENT, dp(3))
-                    .setMargins(dp(60), dp(100), 0, dp(10))
+                    .setMargins(dp(60), dp(80), 0, dp(10))
                     .build())
             addView(yesterdayText, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT)
                     .setMargins(dp(60), 0, 0, 0)
@@ -177,10 +166,7 @@ class MainScreen : BaseController() {
                     .build())
             addView(scrollable, LP.frame(LP.MATCH_PARENT, LP.MATCH_PARENT).build())
         }
-        val gradientDrawable = GradientDrawable(GradientDrawable.Orientation.BR_TL, intArrayOf(Color.RED, Color.BLACK))
-        gradientDrawable.gradientType = GradientDrawable.RECTANGLE
 
-//        contentLayout.background = context.getDrawable(R.drawable.fade_bg_rect)
         return baseLayout
     }
 

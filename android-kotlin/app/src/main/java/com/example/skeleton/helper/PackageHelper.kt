@@ -21,7 +21,7 @@ object PackageHelper {
             val icon = context.packageManager.getApplicationIcon(packageName)
             return icon
         } catch (e: PackageManager.NameNotFoundException) {
-            Logger.e("getAppIcon", "${e.message} - ${e.localizedMessage}")
+            Logger.e("getAppIcon", "fail ${e.message} - ${e.localizedMessage}")
             return null
         }
     }

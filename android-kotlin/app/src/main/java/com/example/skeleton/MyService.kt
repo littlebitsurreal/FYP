@@ -113,7 +113,7 @@ class MyService : JobService() {
                 val updatedDays = pref.getStringSet("updated", setOf<String>()).toMutableSet()
                 if (!updatedDays.contains(day)) {
                     val digest = UsageDigest.load(this@MyService, day)
-                    if (digest == null || digest.totalTime == 0L) {
+                    if (digest.totalTime == 0L) {
                         updatedDays.add(day)
                         prefEdit.putStringSet("updated", updatedDays)
                         prefEdit.apply()

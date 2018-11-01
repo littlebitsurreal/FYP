@@ -2,6 +2,7 @@ package com.example.skeleton
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.widget.FrameLayout
@@ -16,6 +17,7 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setup()
     }
+
     private fun setup() {
         val layout = FrameLayout(this)
         val img = ImageView(this)
@@ -26,14 +28,13 @@ class SplashActivity : AppCompatActivity() {
         layout.addView(img, LP.frame(dp(120), dp(120), Gravity.CENTER).build())
         setContentView(layout)
     }
+
     override fun onResume() {
         super.onResume()
-//        Handler().postDelayed({
-//            startActivity(Intent(this, MainActivity::class.java))
-//            finish()
-//        }, 500L)
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
+        Handler().postDelayed({
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        }, 500)
     }
     //endregion
 }
