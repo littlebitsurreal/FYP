@@ -22,8 +22,10 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
+import com.github.mikephil.charting.formatter.IValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import java.io.File
+import kotlin.math.roundToInt
 
 @Suppress("MemberVisibilityCanBePrivate")
 object GraphHelper {
@@ -42,6 +44,7 @@ object GraphHelper {
             culDuration += r.duration
             l[(r.starTime + r.duration - startOfDay) / 60000f] = culDuration / 3600000f
         }
+        l[0f] = 0f
         return l.toSortedMap().map { Entry(it.key, it.value) }
     }
 
@@ -65,6 +68,7 @@ object GraphHelper {
                 fillDrawable = context.getDrawable(R.drawable.fade_background)
                 setDrawFilled(true)
                 fillAlpha
+                valueFormatter = IValueFormatter { value, entry, dataSetIndex, viewPortHandler -> "" }
             }
 
             xAxis.apply {
@@ -82,15 +86,20 @@ object GraphHelper {
                 textSize = 13f
                 axisMinimum = 0f
                 setLabelCount(5, false)
-                valueFormatter = IAxisValueFormatter { value, _ -> value.toInt().toString() + "h" }
+                valueFormatter = IAxisValueFormatter { value, _ ->
+                    if (value == 0f) ""
+                    else if (value > 1 && (value + 0.03) % 1 < 0.06) String.format("%dh", value.roundToInt())
+                    else if (value > 1) String.format("%dh%02dm", value.toInt(), ((value - value.toInt() * 60)).roundToInt())
+                    else String.format("%dm", ((value - value.toInt()) * 60).roundToInt())
+                }
                 axisLineWidth = 3f
             }
 
             isDoubleTapToZoomEnabled = false
             axisRight.isEnabled = false
-            isDragEnabled = false
-            isScaleXEnabled = false
-            isScaleYEnabled = false
+            isDragEnabled = true
+            isScaleXEnabled = true
+            isScaleYEnabled = true
             description.isEnabled = false
             legend.isEnabled = false
         }
@@ -100,8 +109,8 @@ object GraphHelper {
         val series = arrayListOf<BarEntry>()
         var i = 1f
         for (t in (endTime - 6 * HOUR_24)..endTime step HOUR_24) {
-            val d = UsageDigest.load(context, CalendarHelper.getDayCondensed(t))
-            series.add(BarEntry(i, (d?.totalTime ?: 0) / 3600000f))
+            val d = UsageDigest.loadFiltered(context, CalendarHelper.getDayCondensed(t))
+            series.add(BarEntry(i, (d.totalTime ?: 0) / 3600000f))
             i += 1
         }
         return series
@@ -164,10 +173,10 @@ object GraphHelper {
             setDrawCenterText(true)
             centerText = "Total Usage Time"
             setCenterTextColor(Color.parseColor("#2b83bd"))
-            setCenterTextSize(16f)
+            setCenterTextSize(15f)
 
             isDrawHoleEnabled = true
-            setHoleColor(Color.WHITE)
+            setHoleColor(Color.TRANSPARENT)
 
             setTransparentCircleColor(Color.WHITE)
             setTransparentCircleAlpha(110)
@@ -211,6 +220,6 @@ object GraphHelper {
         }
         pieChart.data = pieData
         pieChart.invalidate()
-        pieChart.animateY(1500, Easing.EasingOption.EaseInOutQuad)
+        pieChart.animateY(1200, Easing.EasingOption.EaseInOutQuad)
     }
 }
