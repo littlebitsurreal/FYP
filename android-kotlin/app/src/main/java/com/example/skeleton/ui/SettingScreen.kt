@@ -56,7 +56,6 @@ class SettingScreen : BaseController() {
                 setTextColor(ResourceHelper.color(R.color.primary))
                 text = "Setting"
                 Touchable.make(this@apply)
-                setOnClickListener(onBackClick)
             }
 
             elevation = 2f
@@ -68,7 +67,7 @@ class SettingScreen : BaseController() {
 
         notTrackingList.apply {
             title.text = "Not tracking list"
-            content.text = "Do not take certain apps into usage count"
+            content.text = "Do not count your productivity apps"
             setPadding(margin)
             setOnTouchListener(onNotTrackingListTouch)
         }
@@ -223,7 +222,7 @@ class SettingScreen : BaseController() {
 
         mStrictModeSwitch?.isEnabled = isChecked
     }
-    private val onReminderTouch = View.OnTouchListener { v, event ->
+    private val onReminderTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
             mReminderSwitch?.isChecked = !(mReminderSwitch?.isChecked
                     ?: return@OnTouchListener true)
@@ -235,7 +234,7 @@ class SettingScreen : BaseController() {
     private val onStrictModeSwitchChange = CompoundButton.OnCheckedChangeListener { _, isChecked ->
         MainApplication.store().view.dispatch(ViewStore.Action.setStrictMode(isChecked))
     }
-    private val onStrictModeTouch = View.OnTouchListener { v, event ->
+    private val onStrictModeTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
             mStrictModeSwitch?.isChecked = !(mStrictModeSwitch?.isChecked
                     ?: return@OnTouchListener true)
@@ -243,7 +242,7 @@ class SettingScreen : BaseController() {
         }
         true
     }
-    private val onNotTrackingListTouch = View.OnTouchListener { v, event ->
+    private val onNotTrackingListTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
             pushController(NotTrackingListScreen())
             return@OnTouchListener false

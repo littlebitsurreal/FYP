@@ -152,7 +152,7 @@ class EnableScreen : BaseController() {
         }
     }
 
-    private val onAllow = View.OnTouchListener { v, event ->
+    private val onAllow = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
             PermissionHelper.getAppUsagePermission(activity ?: return@OnTouchListener true)
             return@OnTouchListener false

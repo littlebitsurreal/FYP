@@ -29,7 +29,9 @@ import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.helper.ScreenUnlockHelper
 import com.example.skeleton.helper.Touchable
 import com.example.skeleton.helper.UsageStatsHelper
+import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.model.UsageSummary
+import com.example.skeleton.model.UsageSummary.Companion.filter
 import com.example.skeleton.ui.base.BaseController
 import com.example.skeleton.widget.ActionBar
 import com.example.skeleton.widget.UsageRecyclerAdapter
@@ -190,40 +192,44 @@ class UsageSummaryScreen : BaseController() {
     private val onSelectListener = { s: Int ->
         mode = Mode.values()[s]
         activity?.let {
-            var list = listOf<UsageSummary>()
-            var unlockCount = 0
-            when (mode) {
-                Mode.Today -> {
-                    list = UsageSummary.getSummary(it, UsageStatsHelper.queryTodayUsage(it))
-                    unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
+            Thread {
+                var list = listOf<UsageSummary>()
+                var unlockCount = 0
+                val time = System.currentTimeMillis()
+
+                when (mode) {
+                    Mode.Today -> {
+                        list = filter(it, UsageSummary.makeSummary(it, UsageStatsHelper.queryTodayUsage(it)))
+                        unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
+                    }
+                    Mode.Hour24 -> {
+                        list = filter(it, UsageSummary.makeSummary(it, UsageStatsHelper.query24hUsage(it)))
+                        unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
+                    }
+                    Mode.Yesterday -> {
+                        list = UsageSummary.getFilteredSummary(it, arrayListOf(CalendarHelper.getDayCondensed(time - HOUR_24)))
+                        unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
+                    }
+                    Mode.Day7 -> {
+                        list = UsageSummary.getFilteredSummary(it,
+                                ((time - 6 * HOUR_24)..time step HOUR_24).map { CalendarHelper.getDayCondensed(it) }
+                        )
+                        unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 7)
+                    }
+                    Mode.Day30 -> {
+                        list = UsageSummary.getFilteredSummary(it,
+                                ((time - 29 * HOUR_24)..time step HOUR_24).map { CalendarHelper.getDayCondensed(it) }
+                        )
+                        unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 30)
+                    }
                 }
-                Mode.Hour24 -> {
-                    list = UsageSummary.getSummary(it, UsageStatsHelper.query24hUsage(it))
-                    unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
+                it.runOnUiThread {
+                    setUsage(list.map { it.useTimeTotal }.sum())
+                    setUnlock(unlockCount)
+                    GraphHelper.setData(mPieChart ?: return@runOnUiThread, list)
+                    mRecycler?.adapter = UsageRecyclerAdapter(list, onSummaryClick)
                 }
-                Mode.Yesterday -> {
-                    list = UsageSummary.getSummary(it, UsageStatsHelper.queryNDayBeforeUsage(it, 2))
-                    unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
-                }
-                Mode.Day7 -> {
-                    list = UsageSummary.getSummary(it, UsageStatsHelper.query7dayUsage(it))
-                    unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 7)
-                }
-                Mode.Day30 -> {
-                    list = UsageSummary.getSummary(it, UsageStatsHelper.query30dayUsage(it))
-                    unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 30)
-                }
-//                Mode.Year -> {
-//                    list = UsageSummary.getSummary(it, UsageStatsHelper.queryAllUsage(it))
-//                    unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 365)
-//                }
-            }
-            it.runOnUiThread {
-                setUsage(list.map { it.useTimeTotal }.sum())
-                setUnlock(unlockCount)
-                GraphHelper.setData(mPieChart ?: return@runOnUiThread, list)
-                mRecycler?.adapter = UsageRecyclerAdapter(list, onSummaryClick)
-            }
+            }.start()
         }
     }
 
