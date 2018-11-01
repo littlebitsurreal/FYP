@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.skeleton.helper.CalendarHelper
 import com.example.skeleton.helper.CsvHelper
 import com.example.skeleton.helper.Logger
+import com.example.skeleton.helper.NotTrackingListHelper
 import com.example.skeleton.helper.ScreenUnlockHelper
 import com.example.skeleton.iface.SerializableToJson
 import org.json.JSONArray
@@ -13,13 +14,13 @@ import java.io.File
 @Suppress("LiftReturnOrAssignment")
 data class UsageDigest(
         val day: String,
-        val summary: List<UsageSummary>,
+        val summaries: List<UsageSummary>,
         val totalTime: Long,
         val unlockCount: Int
 ) : SerializableToJson {
     override fun toJson(): JSONObject {
         val summaryList = JSONArray()
-        for (i in summary) {
+        for (i in summaries) {
             summaryList.put(i.toJson())
         }
         return JSONObject()
@@ -46,38 +47,54 @@ data class UsageDigest(
             return UsageDigest(json.getString("day"), summary, json.getLong("totalTime"), json.getInt("unlockCount"))
         }
 
-        fun make(context: Context, day: String): UsageDigest? {
+        fun make(context: Context, day: String): UsageDigest {
             val file = File(context.filesDir.path + "/" + day)
             val records = CsvHelper.read(file)
             Logger.d(TAG, "make $day - ${records.size}")
             if (records.isEmpty()) {
-                return null
+                return UsageDigest(day, listOf(), 0, 0)
             }
-            val summary = UsageSummary.getSummary(context, records)
+            val summary = UsageSummary.makeSummary(context, records)
             return UsageDigest(day, summary, summary.map { it.useTimeTotal }.sum(), ScreenUnlockHelper.getUnlockCount(context, day))
         }
 
-        fun load(context: Context, day: String): UsageDigest? {
-            Logger.d(TAG, "load   $day   ${CalendarHelper.getDayCondensed(System.currentTimeMillis())}")
+        fun loadFiltered(context: Context, days: List<String>): List<UsageDigest> {
+            val l = days.map { load(context, it) }
+            val list = NotTrackingListHelper.getNotTrackingSet(context)
+            return l.map {
+                it.copy(summaries = it.summaries.filter { !list.contains(it.packageName) })
+            }
+        }
+
+        fun loadFiltered(context: Context, day: String): UsageDigest {
+            val list = NotTrackingListHelper.getNotTrackingSet(context)
+            val digest = load(context, day)
+            return digest.copy(summaries = digest.summaries.filter { !list.contains(it.packageName) })
+        }
+
+        fun load(context: Context, days: List<String>): List<UsageDigest> {
+            return days.map { load(context, it) }
+        }
+
+        fun load(context: Context, day: String): UsageDigest {
             if (day == CalendarHelper.getDayCondensed(System.currentTimeMillis())) {
                 return make(context, day)
             }
 
             try {
                 val pref = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
-                val str = pref.getString(day, null) ?: throw Exception("day $day not found")
+                val str = pref.getString(day, null) ?: throw Exception("record $day not found")
                 return UsageDigest.fromJson(JSONObject(str))
             } catch (e: Exception) {
-                Logger.d(TAG, "load digest($day) failed - ${e.message}")
+                Logger.d(TAG, "load digest failed - ${e.message}")
                 val digest = make(context, day)
-                if (digest != null) {
-                    save(context, digest)
-                }
+                save(context, digest)
                 return digest
             }
         }
 
         private fun save(context: Context, digest: UsageDigest) {
+            Logger.d(TAG, "save  ${digest.day}   ${digest.toJson()}")
             val pref = context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
             pref.putString(digest.day, digest.toJson().toString())
             pref.apply()

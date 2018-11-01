@@ -270,7 +270,7 @@ class MainScreen : BaseController() {
     }
 
     private fun setupYesterdayOverview(context: Context): LinearLayout {
-        val yesterdayDigest = UsageDigest.load(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24))
+        val yesterdayDigest = UsageDigest.loadFiltered(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24))
         val usageOverview = TextView(context)
         val unlockOverview = TextView(context)
 

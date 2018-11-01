@@ -1,6 +1,7 @@
 package com.example.skeleton.model
 
 import android.content.Context
+import com.example.skeleton.helper.NotTrackingListHelper
 import com.example.skeleton.helper.PackageHelper
 import com.example.skeleton.iface.SerializableToJson
 import org.json.JSONObject
@@ -18,7 +19,7 @@ data class UsageSummary(
     }
 
     companion object {
-        fun getSummary(context: Context, records: List<UsageRecord>): List<UsageSummary> {
+        fun makeSummary(context: Context, records: List<UsageRecord>): List<UsageSummary> {
             val dict = hashMapOf<String, Long>()
             for (r in records) {
                 dict[r.packageName] = (dict[r.packageName] ?: 0) + r.duration
@@ -26,6 +27,30 @@ data class UsageSummary(
             return dict.map {
                 UsageSummary(PackageHelper.getAppName(context, it.key), it.key, it.value)
             }.sortedByDescending { it.useTimeTotal }
+        }
+
+        fun getSummary(context: Context, days: List<String>): List<UsageSummary> {
+            val digests = UsageDigest.load(context, days)
+            val totalTime = hashMapOf<String, Long>()
+            val appName = hashMapOf<String, String>()
+            for (d in digests) {
+                for (r in d.summaries) {
+                    totalTime[r.packageName] = (totalTime[r.packageName] ?: 0) + r.useTimeTotal
+                    appName[r.packageName] = r.appName
+                }
+            }
+            return totalTime.map {
+                UsageSummary(appName[it.key] ?: it.key, it.key, it.value)
+            }.sortedByDescending { it.useTimeTotal }
+        }
+
+        fun getFilteredSummary(context: Context, days: List<String>): List<UsageSummary> {
+            return filter(context, getSummary(context, days))
+        }
+
+        fun filter(context: Context, l: List<UsageSummary>): List<UsageSummary> {
+            val list = NotTrackingListHelper.getNotTrackingSet(context)
+            return l.filter { !list.contains(it.packageName) }
         }
 
         fun fromJson(json: JSONObject): UsageSummary {

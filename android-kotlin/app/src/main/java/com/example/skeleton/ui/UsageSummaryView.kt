@@ -5,20 +5,19 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.Gravity
 import android.view.MotionEvent
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.example.skeleton.R
+import com.example.skeleton.helper.CalendarHelper
 import com.example.skeleton.helper.LP
 import com.example.skeleton.helper.PackageHelper.getAppIcon
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.model.UsageSummary
 
-class UsageSummaryView(context: Context, private var onClick: OnClickListener) : FrameLayout(context) {
+class UsageSummaryView(context: Context, private var onClick: OnClickListener) : LinearLayout(context) {
     val margin = dp(13)
-    val layout = LinearLayout(context)
     val icon = ImageView(context)
     val appName = TextView(context)
     val usageSummary = TextView(context)
@@ -40,7 +39,6 @@ class UsageSummaryView(context: Context, private var onClick: OnClickListener) :
         progressBar.apply {
             progressDrawable = context.getDrawable(R.drawable.custom_progress_bar_horizontal)
             progressTintList = ColorStateList.valueOf(Color.RED)
-            elevation = 8f
         }
 
         usageSummary.apply {
@@ -54,35 +52,34 @@ class UsageSummaryView(context: Context, private var onClick: OnClickListener) :
             addView(usageSummary)
         }
 
-        layout.apply {
-            addView(icon, LP.linear(dp(40), dp(40), Gravity.CENTER_VERTICAL)
-                    .setMargins(0, 0, margin * 2, 0)
-                    .build())
-            addView(contentContainer, LP.linear(LP.MATCH_PARENT, LP.WRAP_CONTENT)
-                    .build())
-            addView(img, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL).build())
-            background = resources.getDrawable(R.drawable.btn_rounded, null)
-            setBackgroundColor(Color.WHITE)
-            setPadding(dp(25), dp(12), dp(25), dp(12))
-            elevation = 6f
-
-            setOnTouchListener { v, event ->
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    v.elevation = 12f
-                } else if (event.action == MotionEvent.ACTION_CANCEL || event.action == MotionEvent.ACTION_UP) {
-                    v.elevation = 6f
-                }
-
-                if (event.action == MotionEvent.ACTION_UP) {
-                    onClick.onClick(v)
-                    return@setOnTouchListener false
-                }
-                true
-            }
-        }
-        addView(layout, LP.frame(LP.MATCH_PARENT, LP.WRAP_CONTENT)
-                .setMargins(dp(25), dp(8), dp(25), dp(8))
+        addView(icon, LP.linear(dp(40), dp(40), Gravity.CENTER_VERTICAL)
+                .setMargins(0, 0, margin * 2, 0)
                 .build())
+        addView(contentContainer, LP.linear(LP.MATCH_PARENT, LP.WRAP_CONTENT)
+                .build())
+        addView(img, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_VERTICAL).build())
+
+        background = resources.getDrawable(R.drawable.btn_rounded, null)
+        setBackgroundColor(Color.WHITE)
+        setPadding(dp(25), dp(12), dp(25), dp(12))
+        elevation = 6f
+
+        setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                v.elevation = 12f
+            } else if (event.action == MotionEvent.ACTION_CANCEL || event.action == MotionEvent.ACTION_UP) {
+                v.elevation = 6f
+            }
+
+            if (event.action == MotionEvent.ACTION_UP) {
+                onClick.onClick(v)
+                return@setOnTouchListener false
+            }
+            true
+        }
+        val lp = LinearLayout.LayoutParams(LP.MATCH_PARENT, LP.WRAP_CONTENT)
+        lp.setMargins(dp(25), dp(8), dp(25), dp(8))
+        layoutParams = lp
     }
 
     fun bind(u: UsageSummary, progress: Int) {
@@ -90,6 +87,6 @@ class UsageSummaryView(context: Context, private var onClick: OnClickListener) :
         appName.text = u.appName
         packageName = u.packageName
         progressBar.progress = progress
-        usageSummary.text = resources.getString(R.string.messageview_time_hint, u.useTimeTotal / 1000 / 60)
+        usageSummary.text = "You have used for " + CalendarHelper.toReadableDuration(u.useTimeTotal)
     }
 }
