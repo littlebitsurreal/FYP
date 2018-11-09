@@ -21,11 +21,13 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
+import com.example.skeleton.AppConfig
 import com.example.skeleton.MainApplication.Companion.store
 import io.reactivex.disposables.CompositeDisposable
 import com.example.skeleton.ui.base.BaseController
 import com.example.skeleton.MyService
 import com.example.skeleton.R
+import com.example.skeleton.R.attr.tabIndicatorColor
 import com.example.skeleton.helper.CalendarHelper
 import com.example.skeleton.helper.GraphHelper
 import com.example.skeleton.helper.GraphHelper.plot7DayBarChart
@@ -38,9 +40,14 @@ import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.helper.UsageStatsHelper.getAverageUsageTime
 import com.example.skeleton.model.UsageDigest
 import com.example.skeleton.redux.ViewStore
+import com.example.skeleton.ui.settings.SettingScreen
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.LineChart
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import io.reactivex.functions.Function
+import java.util.Timer
+import java.util.TimerTask
 
 @SuppressLint("ResourceType")
 class MainScreen : BaseController() {
@@ -51,6 +58,10 @@ class MainScreen : BaseController() {
     private var mReminderTitle: TextView? = null
     private var mUsageOverview: TextView? = null
     private var mReminderSwitch: SwitchCompat? = null
+    private var mOldTime = 0L
+    private var mLineChartYesterday: LineChart? = null
+    private var mBarChart7Day: BarChart? = null
+    private var mTimer = Timer()
 
     //region Life Cycle
     override fun onCreateView(context: Context): View {
@@ -65,15 +76,19 @@ class MainScreen : BaseController() {
         val todayText = TextView(context)
         val dayText = TextView(context)
         val settingBtn = setupSettingBtn(context)
+        val graphBtn = setupGraphBtn(context)
         val todayOverviewLayout = setupTodayOverviewLayout(context)
         val reminderLayout = setupReminderLayout(context)
         val divider = View(context)
         val yesterdayText = TextView(context)
         val yesterdayOverviewLayout = setupYesterdayOverview(context)
-        val lineChartYesterday = GraphHelper.plotDailyLineChart(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
+        val lineChartYesterday = GraphHelper.plotDailyLineChart(context)
         val divider2 = View(context)
         val overviewText = TextView(context)
-        val barChart7Day = plot7DayBarChart(context, System.currentTimeMillis())
+        val barChart7Day = plot7DayBarChart(context)
+
+        mLineChartYesterday = lineChartYesterday
+        mBarChart7Day = barChart7Day
 
         todayText.apply {
             text = "TODAY"
@@ -162,8 +177,8 @@ class MainScreen : BaseController() {
         }
 
         baseLayout.apply {
-            addView(settingBtn, LP.frame(dp(55), dp(55), Gravity.RIGHT)
-                    .build())
+            addView(graphBtn, LP.frame(dp(55), dp(55), Gravity.END).build())
+            addView(settingBtn, LP.frame(dp(55), dp(55)).build())
             addView(scrollable, LP.frame(LP.MATCH_PARENT, LP.MATCH_PARENT).build())
         }
 
@@ -172,13 +187,29 @@ class MainScreen : BaseController() {
 
     private fun setupSettingBtn(context: Context): FrameLayout {
         return FrameLayout(context).apply {
-            elevation = 13f
+            elevation = 10f
             setBackgroundColor(color(R.color.light))
             Touchable.make(this@apply)
             setOnClickListener(onSettingClick)
 
             val img = ImageView(context).apply {
-                setImageResource(R.drawable.ic_settings_white_24dp)
+                setImageResource(R.drawable.ic_settings_white)
+            }
+            addView(img, LP.frame(LP.WRAP_CONTENT, LP.WRAP_CONTENT)
+                    .setGravity(Gravity.CENTER)
+                    .build())
+        }
+    }
+
+    private fun setupGraphBtn(context: Context): FrameLayout {
+        return FrameLayout(context).apply {
+            elevation = 10f
+            setBackgroundColor(color(R.color.light))
+            Touchable.make(this@apply)
+            setOnClickListener(onGraphClick)
+
+            val img = ImageView(context).apply {
+                setImageResource(R.drawable.ic_assessment_white)
             }
             addView(img, LP.frame(LP.WRAP_CONTENT, LP.WRAP_CONTENT)
                     .setGravity(Gravity.CENTER)
@@ -256,7 +287,6 @@ class MainScreen : BaseController() {
     }
 
     private fun setupYesterdayOverview(context: Context): LinearLayout {
-        val yesterdayDigest = UsageDigest.loadFiltered(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24))
         val usageOverview = TextView(context)
         val unlockOverview = TextView(context)
 
@@ -266,28 +296,6 @@ class MainScreen : BaseController() {
         return LinearLayout(context).apply {
             val d1 = View(context).apply { setBackgroundColor(Color.parseColor("#ffcc66")) }
             val d2 = View(context).apply { setBackgroundColor(Color.parseColor("#ff9999")) }
-
-            unlockOverview.apply {
-                //                val str = (UsageStatsHelper.getYesterdayUsageTime(context) / 60 / 1000).toString()
-                val str = ((yesterdayDigest?.totalTime ?: 0) / 60 / 1000).toString()
-                val suffix = " min\nUSAGE TIME"
-                val span = SpannableString(str + suffix)
-                span.setSpan(RelativeSizeSpan(2f), 0, str.length + 4, 0)
-                span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length + 4, 0)
-                span.setSpan(ForegroundColorSpan(Color.parseColor("#484c63")), 0, str.length + 4, 0)
-                span.setSpan(ForegroundColorSpan(Color.parseColor("#b5bdc9")), str.length + 4, span.length, 0)
-                text = span
-            }
-            usageOverview.apply {
-                val str = yesterdayDigest?.unlockCount?.toString() ?: ""
-                val suffix = "\nSCREEN UNLOCK"
-                val span = SpannableString(str + suffix)
-                span.setSpan(RelativeSizeSpan(2f), 0, str.length, 0)
-                span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length, 0)
-                span.setSpan(ForegroundColorSpan(Color.parseColor("#484c63")), 0, str.length, 0)
-                span.setSpan(ForegroundColorSpan(Color.parseColor("#b5bdc9")), str.length, span.length, 0)
-                text = span
-            }
 
             addView(d1, LP.linear(dp(3), LP.MATCH_PARENT)
                     .setMargins(dp(60), 0, dp(10), 0)
@@ -307,9 +315,13 @@ class MainScreen : BaseController() {
 
     override fun onAttach(view: View) {
         super.onAttach(view)
-        val time = UsageStatsHelper.getTodayUsageTime(activity ?: return)
-        setUsage(CalendarHelper.toReadableDuration(time))
-        setAverage(time)
+
+        mTimer = Timer()
+        mTimer.schedule(object : TimerTask() {
+            override fun run() {
+                updateView()
+            }
+        }, 0, AppConfig.MAIN_SCREEN_UPDATEVIEW_TIMER)
 
         mSubscriptions.add(store().observe(store().view)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -319,6 +331,8 @@ class MainScreen : BaseController() {
     }
 
     override fun onDetach(view: View) {
+        mTimer.cancel()
+        mOldTime = 0
         super.onDetach(view)
         mSubscriptions.clear()
     }
@@ -326,26 +340,88 @@ class MainScreen : BaseController() {
     //endregion
 
     //region UI Events
-    private fun setUsage(str: String) {
-        val span = SpannableString(str)
-        span.setSpan(RelativeSizeSpan(4.5f), 0, span.length - 4, 0)
-        span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, span.length - 4, 0)
-        span.setSpan(RelativeSizeSpan(1.8f), span.length - 4, span.length, 0)
-        mOverviewText?.text = span
+    private fun updateView() {
+        val usageTime = UsageStatsHelper.getTodayUsageTime(activity ?: return)
+        if (usageTime == mOldTime) return
+
+        mOldTime = usageTime
+        activity?.let {
+            it.runOnUiThread {
+                setUsage(usageTime)
+                setAverage(usageTime)
+                setYesterday(it)
+                GraphHelper.updateChart(it, mLineChartYesterday
+                        ?: return@runOnUiThread, CalendarHelper.getDayCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
+                GraphHelper.updateChart(it, mBarChart7Day ?: return@runOnUiThread)
+            }
+        }
+    }
+
+    private fun setYesterday(context: Context) {
+        val yesterdayDigest = UsageDigest.loadFiltered(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24))
+
+        mUnlockOverview?.apply {
+            val str = ((yesterdayDigest.totalTime ?: 0) / 60 / 1000).toString()
+            val suffix = " min\nUSAGE TIME"
+            val span = SpannableString(str + suffix)
+            span.setSpan(RelativeSizeSpan(2f), 0, str.length + 4, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length + 4, 0)
+            span.setSpan(ForegroundColorSpan(Color.parseColor("#484c63")), 0, str.length + 4, 0)
+            span.setSpan(ForegroundColorSpan(Color.parseColor("#b5bdc9")), str.length + 4, span.length, 0)
+            text = span
+        }
+        mUsageOverview?.apply {
+            val str = yesterdayDigest.unlockCount.toString() ?: ""
+            val suffix = "\nSCREEN UNLOCK"
+            val span = SpannableString(str + suffix)
+            span.setSpan(RelativeSizeSpan(2f), 0, str.length, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length, 0)
+            span.setSpan(ForegroundColorSpan(Color.parseColor("#484c63")), 0, str.length, 0)
+            span.setSpan(ForegroundColorSpan(Color.parseColor("#b5bdc9")), str.length, span.length, 0)
+            text = span
+        }
+    }
+
+    private fun setUsage(t: Long) {
+        if (t / 60000 < 60) {
+            val span = SpannableString(CalendarHelper.toReadableDuration(t))
+            span.setSpan(RelativeSizeSpan(4.3f), 0, span.length - 4, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, span.length - 4, 0)
+            span.setSpan(RelativeSizeSpan(1.8f), span.length - 4, span.length, 0)
+            mOverviewText?.text = span
+        } else {
+            val hour = (t / 3600000).toString()
+            val min = ((t % 3600000) / 60000).toString()
+            val span = SpannableString("${hour}h  ${min}m")
+            span.setSpan(RelativeSizeSpan(4.3f), 0, hour.length, 0)
+            span.setSpan(RelativeSizeSpan(4.3f), hour.length + 3, hour.length + 3 + min.length, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, span.length, 0)
+            span.setSpan(RelativeSizeSpan(1.8f), hour.length, hour.length + 3, 0)
+            span.setSpan(RelativeSizeSpan(1.8f), span.length - 1, span.length, 0)
+            mOverviewText?.text = span
+        }
+
         mOverviewText?.setTextColor(color(R.color.primary))
     }
 
     private fun setAverage(time: Long) {
         val average = getAverageUsageTime(activity ?: return)
-        val span = SpannableString(
-                if (average > time) ((average - time) / 1000 / 60).toString() + " min to average"
-                else ((time - average) / 1000 / 60).toString() + " min more than average!")
+        val span = SpannableString("${if (average == 0L) 100 else time * 100 / average}% of your average")
         span.setSpan(StyleSpan(android.graphics.Typeface.ITALIC), 0, span.length, 0)
         mAverageText?.text = span
+        if (time >= average && average != 0L) {
+            mAverageText?.setTextColor(Color.parseColor("#ff1a00"))
+        } else {
+            mAverageText?.setTextColor(tabIndicatorColor)
+        }
     }
 
     private val onSettingClick = View.OnClickListener {
         pushController(SettingScreen(), FadeChangeHandler(), FadeChangeHandler())
+    }
+
+    private val onGraphClick = View.OnClickListener {
+        pushController(UsageSummaryScreen())
     }
 
     private val onReminderSwitchChange = CompoundButton.OnCheckedChangeListener { _, isChecked ->
