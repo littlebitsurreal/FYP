@@ -9,10 +9,9 @@ object ScreenUnlockHelper {
         val pref = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
         val day = CalendarHelper.getDayCondensed(System.currentTimeMillis())
         val n = pref.getInt(day, 0) + 1
-        val edit = context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
-        edit.putInt(day, n)
-        Logger.d("ScreenUnlockHelper", "$day +$n")
-        edit.apply()
+        val prefEdit = context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
+        prefEdit.putInt(day, n)
+        prefEdit.apply()
     }
 
     fun getUnlockCount(context: Context, day: String): Int {

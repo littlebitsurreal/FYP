@@ -34,7 +34,7 @@ class SplashActivity : AppCompatActivity() {
         Handler().postDelayed({
             startActivity(Intent(this, MainActivity::class.java))
             finish()
-        }, 500)
+        }, AppConfig.SPLASH_DURATION)
     }
     //endregion
 }

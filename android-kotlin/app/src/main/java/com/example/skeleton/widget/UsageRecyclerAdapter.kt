@@ -11,7 +11,7 @@ class UsageRecyclerAdapter(
         private var items: List<UsageSummary>,
         private var onClickListener: View.OnClickListener
 ) : RecyclerView.Adapter<UsageRecyclerAdapter.ViewHolder>() {
-    var maxUsage = items[0].useTimeTotal
+    var maxUsage = if (items.isNotEmpty()) items[0].useTimeTotal else 1
 
     class ViewHolder(val view: UsageSummaryView) : RecyclerView.ViewHolder(view) {
         fun bind(u: UsageSummary, maxUsage: Long) {

@@ -11,7 +11,7 @@ object PackageHelper {
             val applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
             return packageManager.getApplicationLabel(applicationInfo).toString()
         } catch (e: PackageManager.NameNotFoundException) {
-            Logger.e("getAppName", "${e.message} - ${e.localizedMessage}")
+            Logger.e("getAppName", "fail ($packageName) ${e.message} - ${e.localizedMessage}")
             return packageName
         }
     }
@@ -21,7 +21,7 @@ object PackageHelper {
             val icon = context.packageManager.getApplicationIcon(packageName)
             return icon
         } catch (e: PackageManager.NameNotFoundException) {
-            Logger.e("getAppIcon", "fail ${e.message} - ${e.localizedMessage}")
+            Logger.e("getAppIcon", "fail ($packageName)${e.message} - ${e.localizedMessage}")
             return null
         }
     }

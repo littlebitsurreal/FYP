@@ -6,6 +6,7 @@ import com.example.skeleton.helper.CsvHelper
 import com.example.skeleton.helper.Logger
 import com.example.skeleton.helper.NotTrackingListHelper
 import com.example.skeleton.helper.ScreenUnlockHelper
+import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.iface.SerializableToJson
 import org.json.JSONArray
 import org.json.JSONObject
@@ -13,7 +14,7 @@ import java.io.File
 
 @Suppress("LiftReturnOrAssignment")
 data class UsageDigest(
-        val day: String,
+        val date: String,
         val summaries: List<UsageSummary>,
         val totalTime: Long,
         val unlockCount: Int
@@ -24,7 +25,7 @@ data class UsageDigest(
             summaryList.put(i.toJson())
         }
         return JSONObject()
-                .put("day", day)
+                .put("date", date)
                 .put("totalTime", totalTime)
                 .put("unlockCount", unlockCount)
                 .put("summaryList", summaryList)
@@ -44,7 +45,7 @@ data class UsageDigest(
                     Logger.d(TAG, "fromJson failed: i = $i")
                 }
             }
-            return UsageDigest(json.getString("day"), summary, json.getLong("totalTime"), json.getInt("unlockCount"))
+            return UsageDigest(json.getString("date"), summary, json.getLong("totalTime"), json.getInt("unlockCount"))
         }
 
         fun make(context: Context, day: String): UsageDigest {
@@ -60,14 +61,14 @@ data class UsageDigest(
 
         fun loadFiltered(context: Context, days: List<String>): List<UsageDigest> {
             val l = days.map { load(context, it) }
-            val list = NotTrackingListHelper.getNotTrackingSet(context)
+            val list = NotTrackingListHelper.getNotTrackingList(context)
             return l.map {
                 it.copy(summaries = it.summaries.filter { !list.contains(it.packageName) })
             }
         }
 
         fun loadFiltered(context: Context, day: String): UsageDigest {
-            val list = NotTrackingListHelper.getNotTrackingSet(context)
+            val list = NotTrackingListHelper.getNotTrackingList(context)
             val digest = load(context, day)
             return digest.copy(summaries = digest.summaries.filter { !list.contains(it.packageName) })
         }
@@ -77,7 +78,8 @@ data class UsageDigest(
         }
 
         fun load(context: Context, day: String): UsageDigest {
-            if (day == CalendarHelper.getDayCondensed(System.currentTimeMillis())) {
+            if (day == CalendarHelper.getDayCondensed(System.currentTimeMillis()) ||
+                    day == CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24)) {
                 return make(context, day)
             }
 
@@ -86,7 +88,6 @@ data class UsageDigest(
                 val str = pref.getString(day, null) ?: throw Exception("record $day not found")
                 return UsageDigest.fromJson(JSONObject(str))
             } catch (e: Exception) {
-                Logger.d(TAG, "load digest failed - ${e.message}")
                 val digest = make(context, day)
                 save(context, digest)
                 return digest
@@ -94,10 +95,9 @@ data class UsageDigest(
         }
 
         private fun save(context: Context, digest: UsageDigest) {
-            Logger.d(TAG, "save  ${digest.day}   ${digest.toJson()}")
-            val pref = context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
-            pref.putString(digest.day, digest.toJson().toString())
-            pref.apply()
+            val prefEdit = context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
+            prefEdit.putString(digest.date, digest.toJson().toString())
+            prefEdit.apply()
         }
     }
 }

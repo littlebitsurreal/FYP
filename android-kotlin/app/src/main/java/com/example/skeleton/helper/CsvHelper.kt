@@ -42,7 +42,6 @@ object CsvHelper {
                 records.add(record)
             }
             reader.close()
-            Logger.d("CsvHelper", "read file ${file.path}")
             return records
         } catch (e: Exception) {
             Logger.e("CsvHelper", e.message + ": " + e.localizedMessage)

@@ -18,8 +18,7 @@ class AppStore {
 
         val pref = context.getSharedPreferences("redux", Context.MODE_PRIVATE)
         try {
-            val saved = ViewStore.load(JSONObject(pref.getString("client", "")))
-            saved?.let { dispatch(ViewStore.Action._PresistenceRestore(it)) }
+            ViewStore.load(JSONObject(pref.getString("view", "")))?.let { dispatch(ViewStore.Action._PresistenceRestore(it)) }
         } catch (e: Exception) {
             Logger.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
         }
@@ -28,8 +27,7 @@ class AppStore {
     fun save(context: Context) {
         val pref = context.getSharedPreferences("redux", Context.MODE_PRIVATE).edit()
         try {
-            val json = ViewStore.save(view.state)
-            pref.putString("client", json.toString(0))
+            pref.putString("view", ViewStore.save(view.state).toString())
         } catch (e: Exception) {
             Logger.e("redux", "persistence load viewState: ${e.message} - ${e.localizedMessage}")
         }

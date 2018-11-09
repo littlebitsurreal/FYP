@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
             mRouter?.setRoot(RouterTransaction.with(MainScreen()))
         }
     }
+
     override fun onStart() {
         // NOTE: We need to get store ready before super.onStart(),
         //       otherwise Conductor will re-create our view and cause NPE upon using store
@@ -45,11 +46,13 @@ class MainActivity : AppCompatActivity() {
         }
         super.onStart()
     }
+
     override fun onPause() {
         super.onPause()
         mSubscriptions.clear()
         // TODO: We going background, release resource here
     }
+
     override fun onStop() {
         super.onStop()
         if (mStoreRetained) {

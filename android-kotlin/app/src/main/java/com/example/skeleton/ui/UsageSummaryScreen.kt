@@ -27,7 +27,6 @@ import com.example.skeleton.helper.ResourceHelper
 import com.example.skeleton.helper.ResourceHelper.color
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.helper.ScreenUnlockHelper
-import com.example.skeleton.helper.Touchable
 import com.example.skeleton.helper.UsageStatsHelper
 import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.model.UsageSummary
@@ -87,8 +86,6 @@ class UsageSummaryScreen : BaseController() {
                 textSize = 22f
                 setTextColor(color(R.color.primary))
                 text = "Usage Record"
-                Touchable.make(this@apply)
-                setOnClickListener(onBackClick)
             }
 
             val spinner = Spinner(context).apply {
@@ -236,9 +233,14 @@ class UsageSummaryScreen : BaseController() {
     private fun setUsage(l: Long) {
         val str = CalendarHelper.toReadableDuration(l)
         val span = SpannableString("$str\nUsage Time")
-        span.setSpan(RelativeSizeSpan(2f), 0, str.length - 4, 0)
-        span.setSpan(StyleSpan(Typeface.BOLD), 0, str.length - 4, 0)
         span.setSpan(RelativeSizeSpan(0.7f), str.length, span.length, 0)
+        if (l / 60000 < 60) {
+            span.setSpan(RelativeSizeSpan(2f), 0, str.length - 4, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length - 4, 0)
+        } else {
+            span.setSpan(RelativeSizeSpan(2f), 0, str.length, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length, 0)
+        }
         span.setSpan(ForegroundColorSpan(Color.parseColor("#aaffffff")), str.length, span.length, 0)
         mUsageText?.text = span
     }

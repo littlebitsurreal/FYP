@@ -13,7 +13,7 @@ object NotTrackingListHelper {
         return list.map { NotTrackingRecord(it.value.toString(), it.key, true) }
     }
 
-    fun getNotTrackingSet(context: Context): List<String> {
+    fun getNotTrackingList(context: Context): List<String> {
         val pref = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE)
         val list = pref.all
         return list.keys.toList()
@@ -21,20 +21,20 @@ object NotTrackingListHelper {
 
     fun addRecords(context: Context, l: List<NotTrackingRecord>) {
         Logger.d("NotTrackingListHelper", "add ${l.map { it.packageName }}")
-        val pref = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE).edit()
+        val prefEdit = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE).edit()
         for (r in l) {
-            pref.putString(r.packageName, r.appName)
+            prefEdit.putString(r.packageName, r.appName)
         }
-        pref.apply()
+        prefEdit.apply()
     }
 
     fun removeRecords(context: Context, l: List<NotTrackingRecord>) {
         Logger.d("NotTrackingListHelper", "remove ${l.map { it.packageName }}")
-        val pref = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE).edit()
+        val prefEdit = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE).edit()
         for (r in l) {
-            pref.remove(r.packageName)
+            prefEdit.remove(r.packageName)
         }
-        pref.apply()
+        prefEdit.apply()
     }
 
     fun getList(context: Context): List<NotTrackingRecord> {
