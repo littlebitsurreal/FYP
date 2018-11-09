@@ -25,6 +25,7 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import com.github.mikephil.charting.formatter.IValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import java.io.File
+import java.util.Calendar
 import kotlin.math.roundToInt
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -37,7 +38,13 @@ object GraphHelper {
         }
         val l = hashMapOf<Float, Float>()
         var culDuration = 0L
-        val startOfDay = (records.first().starTime / 3600 / 1000) * 3600000
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = records.first().starTime
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        val startOfDay = cal.timeInMillis
 
         for (r in records) {
             l[(r.starTime - startOfDay) / 60000f] = culDuration / 3600000f
@@ -48,29 +55,31 @@ object GraphHelper {
         return l.toSortedMap().map { Entry(it.key, it.value) }
     }
 
-    fun plotDailyLineChart(context: Context, day: String): LineChart? {
+    fun updateChart(context: Context, lineChart: LineChart, day: String) {
         val entries = getCumulative(context, day)
         if (entries.isEmpty()) {
-            return null
+            return
         }
         val dataSet = LineDataSet(entries, "Usage Time")
         val lineData = LineData(dataSet)
+        dataSet.apply {
+            color = Color.parseColor("#00d0ff")
+            setCircleColor(Color.parseColor("#00d0ff"))
+            setDrawCircleHole(false)
+            setDrawCircles(false)
+            lineWidth = 2f
+            fillDrawable = context.getDrawable(R.drawable.fade_background)
+            setDrawFilled(true)
+            fillAlpha
+            valueFormatter = IValueFormatter { value, entry, dataSetIndex, viewPortHandler -> "" }
+        }
+        lineChart.data = lineData
+        lineChart.invalidate()
+    }
+
+    fun plotDailyLineChart(context: Context): LineChart {
 
         return LineChart(context).apply {
-            data = lineData
-
-            dataSet.apply {
-                color = Color.parseColor("#00d0ff")
-                setCircleColor(Color.parseColor("#00d0ff"))
-                setDrawCircleHole(false)
-                setDrawCircles(false)
-                lineWidth = 3f
-                fillDrawable = context.getDrawable(R.drawable.fade_background)
-                setDrawFilled(true)
-                fillAlpha
-                valueFormatter = IValueFormatter { value, entry, dataSetIndex, viewPortHandler -> "" }
-            }
-
             xAxis.apply {
                 textSize = 13f
                 position = XAxis.XAxisPosition.BOTTOM
@@ -87,9 +96,9 @@ object GraphHelper {
                 axisMinimum = 0f
                 setLabelCount(5, false)
                 valueFormatter = IAxisValueFormatter { value, _ ->
-                    if (value == 0f) ""
+                    if (value == 0f) "0"
                     else if (value > 1 && (value + 0.03) % 1 < 0.06) String.format("%dh", value.roundToInt())
-                    else if (value > 1) String.format("%dh%02dm", value.toInt(), ((value - value.toInt() * 60)).roundToInt())
+                    else if (value > 1) String.format("%dh%02dm", value.toInt(), (((value - value.toInt()) * 60)).roundToInt())
                     else String.format("%dm", ((value - value.toInt()) * 60).roundToInt())
                 }
                 axisLineWidth = 3f
@@ -116,24 +125,27 @@ object GraphHelper {
         return series
     }
 
-    fun plot7DayBarChart(context: Context, time: Long): BarChart? {
+    fun updateChart(context: Context, barChart: BarChart) {
+        val time = System.currentTimeMillis()
         val entries = get7DaySummary(context, time)
         if (entries.isEmpty()) {
-            return null
+            return
         }
         val dataSet = BarDataSet(entries, "Usage Time")
         val barData = BarData(dataSet)
+        dataSet.apply {
+            valueTextSize = 11f
+            setValueFormatter { value, _, _, _ ->
+                if (value != 0f) String.format("%d:%02d", value.toInt(), ((value - value.toInt()) * 60).toInt()) else ""
+            }
+        }
+        barChart.data = barData
+        barChart.invalidate()
+    }
+
+    fun plot7DayBarChart(context: Context): BarChart? {
 
         return BarChart(context).apply {
-            data = barData
-
-            dataSet.apply {
-                valueTextSize = 11f
-                setValueFormatter { value, _, _, _ ->
-                    if (value != 0f) String.format("%d:%02d", value.toInt(), ((value - value.toInt()) * 60).toInt()) else ""
-                }
-            }
-
             xAxis.apply {
                 position = XAxis.XAxisPosition.BOTTOM
                 setDrawGridLines(false)
@@ -141,7 +153,7 @@ object GraphHelper {
                 labelRotationAngle = 30f
 
                 valueFormatter = IAxisValueFormatter { value, _ ->
-                    val t = time - (7 - value.toLong()) * HOUR_24
+                    val t = System.currentTimeMillis() - (7 - value.toLong()) * HOUR_24
                     CalendarHelper.getMonthDay(t)
                 }
             }
@@ -150,7 +162,12 @@ object GraphHelper {
                 axisMinimum = 0f
                 setLabelCount(5, false)
                 textSize = 13f
-                valueFormatter = IAxisValueFormatter { value, _ -> value.toInt().toString() + "h" }
+                valueFormatter = IAxisValueFormatter { value, _ ->
+                    if (value == 0f) "0"
+                    else if (value > 1 && (value + 0.03) % 1 < 0.06) String.format("%dh", value.roundToInt())
+                    else if (value > 1) String.format("%dh%02dm", value.toInt(), (((value - value.toInt()) * 60)).roundToInt())
+                    else String.format("%dm", ((value - value.toInt()) * 60).roundToInt())
+                }
             }
 
             isDoubleTapToZoomEnabled = false
@@ -164,7 +181,6 @@ object GraphHelper {
     }
 
     fun plotSummaryPieChart(context: Context): PieChart {
-
         return PieChart(context).apply {
             setUsePercentValues(true)
             description.isEnabled = false
@@ -184,7 +200,7 @@ object GraphHelper {
             holeRadius = 55f
             transparentCircleRadius = 63f
 
-            setEntryLabelColor(Color.WHITE)
+            setEntryLabelColor(Color.parseColor("#cc444444"))
             setEntryLabelTextSize(13f)
         }
     }
@@ -216,10 +232,9 @@ object GraphHelper {
         val pieData = PieData(pieDataSet).apply {
             setValueFormatter(PercentFormatter())
             setValueTextSize(15f)
-            setValueTextColor(Color.WHITE)
+            setValueTextColor(Color.parseColor("#555555"))
         }
         pieChart.data = pieData
-        pieChart.invalidate()
         pieChart.animateY(1200, Easing.EasingOption.EaseInOutQuad)
     }
 }
