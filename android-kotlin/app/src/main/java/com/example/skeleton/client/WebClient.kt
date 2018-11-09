@@ -11,7 +11,6 @@ import okhttp3.MediaType
 import org.json.JSONException
 import com.example.skeleton.helper.Logger
 import com.example.skeleton.iface.SerializableToJson
-import com.example.skeleton.model.MyLoginSession
 
 @Suppress("unused", "PrivatePropertyName", "UNUSED_PARAMETER", "MemberVisibilityCanBePrivate")
 class WebClient {
@@ -102,7 +101,6 @@ class WebClient {
                 RequestType.DELETE -> { req.delete(mBody) }
             }
             // Insert token if needed
-            mToken?.let { req.addHeader("Authorization", "Bearer " + it) }
             http.newCall(req.build()).enqueue(object : okhttp3.Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     cb?.invoke(Result.ServerUnreachable, null, null)
@@ -113,53 +111,6 @@ class WebClient {
                 }
             })
         }
-    }
-    //endregion
-
-    //region Auth Functions
-    fun login(input: Login.Input, cb: (Result, Login.Output?) -> Unit) {
-        mMockHandler.postDelayed({
-            mAuthToken = "1234"
-            val output = Login.Output(
-                    result = Login.Output.Result.Success,
-                    me = MyLoginSession(1, "My Name")
-            )
-            cb.invoke(Result.Success, output)
-        }, MOCK_CALLBACK_DELAY)
-//        ApiBuilder(AppConfig.SERVER_BASE + "login")
-////                .post(FormBody.Builder()
-////                        .add("email", input.email)
-////                        .add("password", input.pass)
-////                        .build())
-//                .post(input)
-//                .execute(mHttpClient, { result, response, body ->
-//                    var r = result
-//                    val output = try {
-//                        if (result == Result.Success && (response?.isSuccessful == true)) {
-//                            Login.Output.from(JSONObject(body))
-//                        } else null
-//                    } catch (e: Exception) {
-//                        Logger.e(TAG, "login: $result, $body - ${e.message}")
-//                        r = Result.PayloadError
-//                        null
-//                    }
-//                    Logger.d(TAG, "login: ${output?.result} - $result, $body")
-//                    cb.invoke(r, output)
-//                })
-    }
-    fun logout(cb: (Result) -> Unit) {
-        //TODO: Replace this with a real HTTP request
-        mMockHandler.postDelayed({
-            mAuthToken = ""
-            cb.invoke(Result.Success)
-        }, MOCK_CALLBACK_DELAY)
-    }
-
-    fun register(cb: (Result) -> Unit) {
-        //TODO: Replace this with a real HTTP request
-        mMockHandler.postDelayed({
-            cb.invoke(Result.ServerUnreachable)
-        }, MOCK_CALLBACK_DELAY)
     }
     //endregion
 }

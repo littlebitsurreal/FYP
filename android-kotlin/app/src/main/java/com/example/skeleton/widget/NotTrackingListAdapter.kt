@@ -3,7 +3,7 @@ package com.example.skeleton.widget
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
 import com.example.skeleton.model.NotTrackingRecord
-import com.example.skeleton.ui.NotTrackingListView
+import com.example.skeleton.ui.settings.NotTrackingListView
 
 class NotTrackingListAdapter(
         private var items: List<NotTrackingRecord>,
