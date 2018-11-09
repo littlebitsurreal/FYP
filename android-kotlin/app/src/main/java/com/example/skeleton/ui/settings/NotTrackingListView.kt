@@ -1,4 +1,4 @@
-package com.example.skeleton.ui
+package com.example.skeleton.ui.settings
 
 import android.content.Context
 import android.support.v7.widget.AppCompatCheckBox

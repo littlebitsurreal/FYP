@@ -1,4 +1,4 @@
-package com.example.skeleton.ui
+package com.example.skeleton.ui.settings
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -21,7 +21,9 @@ import com.example.skeleton.helper.Touchable
 import com.example.skeleton.redux.ViewStore
 import com.example.skeleton.ui.base.BaseController
 import com.example.skeleton.widget.ActionBar
+import com.example.skeleton.widget.SettingDivider
 import com.example.skeleton.widget.SettingMore
+import com.example.skeleton.widget.SettingSubheading
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Consumer
@@ -41,14 +43,87 @@ class SettingScreen : BaseController() {
 
     private fun setup(context: Context): View {
         val layout = LinearLayout(context)
-        val actionBar = ActionBar(context)
+        val actionBar = setupActionBar(context)
+        val generalHeading = SettingSubheading(context)
+        val notTrackingList = SettingMore(context)
+        val reminderHeading = SettingSubheading(context)
         val reminderLayout = setupReminderLayout(context)
         val strictModeLayout = setupStrictModeLayout(context)
-        val notTrackingList = SettingMore(context)
+        val otherHeading = SettingSubheading(context)
+        val aboutThisApp = SettingMore(context)
+        val faq = SettingMore(context)
+        val privacyPolicy = SettingMore(context)
+//        val setAppUsageLimit = SettingMore(context)
 
         layout.orientation = LinearLayout.VERTICAL
 
-        actionBar.run {
+        generalHeading.apply {
+            text = "GENERAL"
+            setPadding(margin)
+        }
+        notTrackingList.apply {
+            title.text = "Not Tracking List"
+            content.text = "Do not count your productivity apps"
+            setPadding(margin)
+            setOnTouchListener(onNotTrackingListTouch)
+        }
+
+        reminderHeading.apply {
+            text = "REMINDER"
+            setPadding(margin)
+        }
+
+        otherHeading.apply {
+            text = "OTHER"
+            setPadding(margin)
+        }
+        aboutThisApp.apply {
+            title.text = "About This App"
+            content.text = "View more about this app"
+            setPadding(margin)
+            setOnTouchListener(onAboutThisAppTouch)
+        }
+        faq.apply {
+            title.text = "Frequently asked questions"
+            content.text = "View more about frequently asked questions"
+            setPadding(margin)
+            setOnTouchListener(onFaqTouch)
+        }
+        privacyPolicy.apply {
+            title.text = "Privacy Policy"
+            content.text = "View more about privacy policy"
+            setPadding(margin)
+            setOnTouchListener(onPrivacyPolicyTouch)
+        }
+
+//        setAppUsageLimit.apply {
+//            title.text = "Set App Usage Limit"
+//            content.text = "Customize for your individual apps"
+//            setPadding(margin)
+//            setOnTouchListener(onSetAppUsageLimit)
+//        }
+
+        layout.apply {
+            addView(actionBar, LP.frame(LP.MATCH_PARENT, dp(50)).build())
+            addView(generalHeading)
+            addView(notTrackingList)
+            addView(reminderHeading)
+            addView(reminderLayout)
+            addView(SettingDivider(context))
+            addView(strictModeLayout)
+            addView(otherHeading)
+            addView(aboutThisApp)
+            addView(SettingDivider(context))
+            addView(faq)
+            addView(SettingDivider(context))
+            addView(privacyPolicy)
+        }
+
+        return layout
+    }
+
+    private fun setupActionBar(context: Context): ActionBar {
+        return ActionBar(context).apply {
             val title = TextView(context).apply {
                 gravity = Gravity.CENTER_HORIZONTAL
                 typeface = ResourceHelper.font(R.font.barlow_condensed_medium)
@@ -61,25 +136,9 @@ class SettingScreen : BaseController() {
             elevation = 2f
             setBackgroundColor(Color.WHITE)
 
-            addLeftButton(R.drawable.ic_arrow_back_24dp, onBackClick)
+            addLeftButton(R.drawable.ic_arrow_back_24dp, View.OnClickListener { _ -> popController() })
             addLeftView(title)
         }
-
-        notTrackingList.apply {
-            title.text = "Not tracking list"
-            content.text = "Do not count your productivity apps"
-            setPadding(margin)
-            setOnTouchListener(onNotTrackingListTouch)
-        }
-
-        layout.apply {
-            addView(actionBar, LP.frame(LP.MATCH_PARENT, dp(50)).build())
-            addView(reminderLayout)
-            addView(strictModeLayout)
-            addView(notTrackingList)
-        }
-
-        return layout
     }
 
     private fun setupReminderLayout(context: Context): RelativeLayout {
@@ -131,7 +190,7 @@ class SettingScreen : BaseController() {
                     .build())
 
             mReminderSwitch = switch
-            title.text = "Over-use reminder"
+            title.text = "Over-use Reminder"
             content.text = "Remind you if your usage exceeds limit"
             switch.setOnCheckedChangeListener(onReminderSwitchChange)
             setOnTouchListener(onReminderTouch)
@@ -249,9 +308,33 @@ class SettingScreen : BaseController() {
         }
         true
     }
-    private val onBackClick = View.OnClickListener {
-        popController()
+    private val onAboutThisAppTouch = View.OnTouchListener { _, event ->
+        if (event?.action == MotionEvent.ACTION_UP) {
+            pushController(AboutThisAppScreen())
+            return@OnTouchListener false
+        }
+        true }
+    private val onFaqTouch = View.OnTouchListener { _, event ->
+        if (event?.action == MotionEvent.ACTION_UP) {
+            pushController(FaqScreen())
+            return@OnTouchListener false
+        }
+        true
     }
+    private val onPrivacyPolicyTouch = View.OnTouchListener { _, event ->
+        if (event?.action == MotionEvent.ACTION_UP) {
+            pushController(PrivacyPolicyScreen())
+            return@OnTouchListener false
+        }
+        true
+    }
+//    private val onSetAppUsageLimit = View.OnTouchListener { _, event ->
+//        if (event?.action == MotionEvent.ACTION_UP) {
+//            pushController(SetAppUsageLimitScreen())
+//            return@OnTouchListener false
+//        }
+//        true
+//    }
     //endregion
 
     //region redux

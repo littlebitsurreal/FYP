@@ -1,4 +1,4 @@
-package com.example.skeleton.ui
+package com.example.skeleton.ui.settings
 
 import android.content.Context
 import android.graphics.Color
@@ -102,9 +102,10 @@ class NotTrackingListScreen : BaseController() {
 
     private val onInfoClick = View.OnClickListener {
         activity?.let {
-            val builder = AlertDialog.Builder(it, android.R.style.Theme_Material_Dialog_Alert)
-            builder.setMessage("Add your productivity apps into Not tracking list.\nApps added will not be count into usage.")
-                    .setNeutralButton(android.R.string.ok, { _, _ -> })
+            val builder = AlertDialog.Builder(it, android.R.style.Theme_Material_Dialog_NoActionBar)
+            builder.setTitle("Information")
+                    .setMessage("Add your productivity apps into not tracking list. Apps added will not be count into usage.")
+                    .setPositiveButton(android.R.string.ok, { _, _ -> })
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show()
         }
