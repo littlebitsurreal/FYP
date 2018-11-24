@@ -11,7 +11,7 @@ class ViewStore {
             val agreeTermsConditions: Boolean = false,
             val isReminderOn: Boolean = false,
             val isStrictModeOn: Boolean = false,
-            val foregroundOn: Boolean = false,
+            val isForegroundOn: Boolean = false,
             val usageLimit: Int = 30,
             val isNotTrackingListUpdating: Boolean = false
     )
@@ -37,7 +37,8 @@ class ViewStore {
                     agreeTermsConditions = json.getBoolean("agreeTermsConditions"),
                     isReminderOn = json.getBoolean("isReminderOn"),
                     isStrictModeOn = json.getBoolean("isStrictModeOn"),
-                    usageLimit = json.getInt("usageLimit")
+                    usageLimit = json.getInt("usageLimit"),
+                    isForegroundOn = json.getBoolean("isForegroundOn")
             )
         }
 
@@ -48,6 +49,7 @@ class ViewStore {
                     .put("isReminderOn", state.isReminderOn)
                     .put("isStrictModeOn", state.isStrictModeOn)
                     .put("usageLimit", state.usageLimit)
+                    .put("isForegroundOn", state.isForegroundOn)
         }
 
         // Reducer
@@ -66,7 +68,7 @@ class ViewStore {
                     state.copy(isStrictModeOn = action.on)
                 }
                 is Action.SetForeground -> {
-                    state.copy(foregroundOn = action.on)
+                    state.copy(isForegroundOn = action.on)
                 }
                 is Action.SetUsageLimit -> {
                     state.copy(usageLimit = action.time)
