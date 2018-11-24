@@ -13,6 +13,7 @@ import android.app.Service
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
@@ -25,6 +26,8 @@ import com.example.skeleton.helper.NotificationHelper
 import com.example.skeleton.helper.PackageHelper
 import com.example.skeleton.helper.UsageStatsHelper.queryTodayUsage
 import com.example.skeleton.model.UsageRecord
+import com.example.skeleton.redux.ViewStore
+import org.json.JSONObject
 import java.lang.ref.WeakReference
 import java.util.concurrent.locks.ReentrantLock
 
@@ -47,21 +50,24 @@ class MyService : Service() {
     private var mLastQueryTime: Long = 0
     private var mTimer: Timer? = null
     private var mTodayUsages = HashMap<String, Long>()
-    private var mNotTrackingList = listOf<String>()
-    private var mReminderOn = true
-    private var mStrictMode = true
-    private var mUsageLimit = 30 * 60 * 1000
+    private var mNotTrackingList: List<String>? = null
     private var mToday: String = ""
+    var isReminderOn: Boolean = false
+    var isStrictModeOn: Boolean = false
+    var usageLimit: Int = 30
 
+    //region Life cycle
     override fun onCreate() {
         super.onCreate()
-        mNotTrackingList = NotTrackingListHelper.getNotTrackingList(this)
-        mUsageLimit = getSharedPreferences("MyService", Context.MODE_PRIVATE).getInt("mUsageLimit", 30 * 60 * 1000)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground()
             registerScreenUnlockReceiver()
         }
+        loadRedux()
         loadUsages()
+        loadNotTrackingList()
+
         startForegroundListener()
         Logger.d("MyService", "onCreate")
     }
@@ -71,6 +77,7 @@ class MyService : Service() {
         mTimer?.cancel()
         sendBroadcast(Intent(this, ServiceEndReceiver::class.java))
         unregisterReceiver(ScreenUnlockReceiver())
+
         super.onDestroy()
     }
 
@@ -132,6 +139,7 @@ class MyService : Service() {
             stopForeground(true)
         }
     }
+
     private fun registerScreenUnlockReceiver() {
         val intentFilter = IntentFilter()
         intentFilter.addAction("android.intent.action.USER_PRESENT")
@@ -209,7 +217,21 @@ class MyService : Service() {
         }
     }
 
+    private fun loadRedux() {
+        val pref = getSharedPreferences("redux", Context.MODE_PRIVATE)
+        val store = try {
+            ViewStore.load(JSONObject(pref.getString("view", ""))) ?: return
+        } catch (e: Exception) {
+            Logger.e("loadRedux", "${e.message}, use default value")
+            ViewStore.State()
         }
+        isReminderOn = store.isReminderOn
+        isStrictModeOn = store.isStrictModeOn
+        usageLimit = store.usageLimit
+    }
+
+    fun loadNotTrackingList() {
+        mNotTrackingList = NotTrackingListHelper.loadNotTrackingList(this)
     }
 
     private fun loadUsages() {
