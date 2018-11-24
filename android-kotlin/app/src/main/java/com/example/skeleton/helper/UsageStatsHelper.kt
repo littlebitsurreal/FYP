@@ -11,7 +11,7 @@ import org.json.JSONObject
 import java.io.File
 
 object UsageStatsHelper {
-    data class Result(val records: List<UsageRecord>, val lastEndTime: Long)
+    data class Result(val records: List<UsageRecord>, val lastEndTime: Long, val foregroundPackageName: String?)
 
     const val HOUR_24 = 1000 * 60 * 60 * 24L
     private var mLastForegroundEvent: String? = null
@@ -41,7 +41,7 @@ object UsageStatsHelper {
                 mLastTimeStamp = timeStamp
             }
         }
-        return Result(records, lastEndTime)
+        return Result(records, lastEndTime, mLastForegroundEvent)
     }
 
     private fun recordUsage(context: Context, packageName: String, startTime: Long, duration: Long) {

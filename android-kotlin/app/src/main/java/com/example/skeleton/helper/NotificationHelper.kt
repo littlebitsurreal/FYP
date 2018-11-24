@@ -1,11 +1,11 @@
 package com.example.skeleton.helper
 
+import android.app.Notification.VISIBILITY_SECRET
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
@@ -24,14 +24,13 @@ object NotificationHelper {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
 
-            val icon = BitmapFactory.decodeResource(context.resources, R.drawable.elephant)
-
             val notification = NotificationCompat.Builder(context, "default")
                     .setTicker("Exceed Usage Limit")
-                    .setSmallIcon(R.drawable.elephant)
+                    .setSmallIcon(R.drawable.ic_assistant)
                     .setContentTitle(title)
                     .setContentText(content)
                     .setContentIntent(pendingIntent)
+                    .setVisibility(VISIBILITY_SECRET)
                     .build()
             with(NotificationManagerCompat.from(context)) {
                 notify(id, notification)

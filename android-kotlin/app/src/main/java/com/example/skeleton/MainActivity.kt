@@ -101,7 +101,10 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         mSubscriptions.clear()
-        unbindService(con)
+        try {
+            unbindService(con)
+        } catch (e: Exception) {
+        }
     }
 
     override fun onStop() {
@@ -144,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         mBinder?.service?.get()?.usageLimit = limit
     }
     private val mapForeground = Function<ViewStore.State, Boolean> { state ->
-        state.foregroundOn
+        state.isForegroundOn
     }
     private val consumeForeground = Consumer<Boolean> { on ->
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return@Consumer
