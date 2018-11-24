@@ -2,7 +2,6 @@ package com.example.skeleton.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.support.v7.widget.CardView
@@ -25,7 +24,6 @@ import com.example.skeleton.AppConfig
 import com.example.skeleton.MainApplication.Companion.store
 import io.reactivex.disposables.CompositeDisposable
 import com.example.skeleton.ui.base.BaseController
-import com.example.skeleton.MyService
 import com.example.skeleton.R
 import com.example.skeleton.R.attr.tabIndicatorColor
 import com.example.skeleton.helper.CalendarHelper
@@ -65,7 +63,6 @@ class MainScreen : BaseController() {
 
     //region Life Cycle
     override fun onCreateView(context: Context): View {
-        context.startService(Intent(context, MyService::class.java))
         return setup(context)
     }
 
@@ -98,7 +95,7 @@ class MainScreen : BaseController() {
         }
 
         dayText.apply {
-            text = CalendarHelper.getDay(System.currentTimeMillis())
+            text = CalendarHelper.getDateLong(System.currentTimeMillis())
             isAllCaps = true
             textSize = 15f
             setTextColor(Color.parseColor("#8996a9"))
@@ -351,23 +348,23 @@ class MainScreen : BaseController() {
                 setAverage(usageTime)
                 setYesterday(it)
                 GraphHelper.updateChart(it, mLineChartYesterday
-                        ?: return@runOnUiThread, CalendarHelper.getDayCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
+                        ?: return@runOnUiThread, CalendarHelper.getDateCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
                 GraphHelper.updateChart(it, mBarChart7Day ?: return@runOnUiThread)
             }
         }
     }
 
     private fun setYesterday(context: Context) {
-        val yesterdayDigest = UsageDigest.loadFiltered(context, CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24))
+        val yesterdayDigest = UsageDigest.loadFiltered(context, CalendarHelper.getDateCondensed(System.currentTimeMillis() - HOUR_24))
 
         mUnlockOverview?.apply {
-            val str = ((yesterdayDigest.totalTime ?: 0) / 60 / 1000).toString()
-            val suffix = " min\nUSAGE TIME"
+            val str = CalendarHelper.toReadableDuration(yesterdayDigest.totalTime)
+            val suffix = "\nUSAGE TIME"
             val span = SpannableString(str + suffix)
-            span.setSpan(RelativeSizeSpan(2f), 0, str.length + 4, 0)
-            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length + 4, 0)
-            span.setSpan(ForegroundColorSpan(Color.parseColor("#484c63")), 0, str.length + 4, 0)
-            span.setSpan(ForegroundColorSpan(Color.parseColor("#b5bdc9")), str.length + 4, span.length, 0)
+            span.setSpan(RelativeSizeSpan(2f), 0, str.length, 0)
+            span.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, str.length, 0)
+            span.setSpan(ForegroundColorSpan(Color.parseColor("#484c63")), 0, str.length, 0)
+            span.setSpan(ForegroundColorSpan(Color.parseColor("#b5bdc9")), str.length, span.length, 0)
             text = span
         }
         mUsageOverview?.apply {
@@ -425,7 +422,7 @@ class MainScreen : BaseController() {
     }
 
     private val onReminderSwitchChange = CompoundButton.OnCheckedChangeListener { _, isChecked ->
-        store().view.dispatch(ViewStore.Action.setReminder(isChecked))
+        store().view.dispatch(ViewStore.Action.SetReminder(isChecked))
     }
     private val onReminderTouch = View.OnTouchListener { v, event ->
         if (event?.action == MotionEvent.ACTION_DOWN) {
@@ -444,7 +441,7 @@ class MainScreen : BaseController() {
 
     //region redux
     private val mapReminder = Function<ViewStore.State, Boolean> { state ->
-        state.reminderOn
+        state.isReminderOn
     }
     private val consumeReminder = Consumer<Boolean> { isChecked ->
         mReminderSwitch?.isChecked = isChecked

@@ -27,6 +27,7 @@ class MainApplication : Application() {
             }
             sStoreRef++
         }
+
         fun releaseStore(context: Context) {
             sStoreRef--
             if (sStoreRef == 0) {
@@ -34,6 +35,7 @@ class MainApplication : Application() {
                 sStore = null
             }
         }
+
         fun store(): AppStore {
             return sStore!!
         }
