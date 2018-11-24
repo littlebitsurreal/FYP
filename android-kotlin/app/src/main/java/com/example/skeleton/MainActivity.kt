@@ -17,19 +17,32 @@ class MainActivity : AppCompatActivity() {
     private val mSubscriptions = CompositeDisposable()
     private var mRouter: Router? = null
     private var mStoreRetained: Boolean = false
+    private var mBinder: MyService.MyBinder? = null
+
+    private val con = object : ServiceConnection {
+        override fun onServiceDisconnected(p0: ComponentName?) {
+        }
+
+        override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {
+            mBinder = p1 as? MyService.MyBinder
+        }
+    }
 
     //region Lifecycle
     //---------------------------------------------------------------
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (!mStoreRetained) {
             mStoreRetained = true
             MainApplication.retainStore(this)
         }
+
+        startService(Intent(this, MyService::class.java))
+
         val layout = FrameLayout(this)
         setContentView(layout)
         mRouter = Conductor.attachRouter(this, layout, savedInstanceState)
-
         if (!PermissionHelper.hasAppUsagePermission(this) || !store().view.state.agreeTermsConditions) {
             mRouter?.setRoot(RouterTransaction.with(StartScreen()))
         } else {
@@ -44,6 +57,8 @@ class MainActivity : AppCompatActivity() {
             mStoreRetained = true
             MainApplication.retainStore(this)
         }
+
+        bindService(Intent(this, MyService::class.java), con, 0)
         super.onStart()
     }
 

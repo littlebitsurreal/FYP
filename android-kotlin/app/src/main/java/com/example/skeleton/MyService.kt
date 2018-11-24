@@ -8,10 +8,9 @@ import com.example.skeleton.helper.UsageStatsHelper
 import java.util.Timer
 import java.util.TimerTask
 import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
 import android.os.Build
@@ -26,6 +25,7 @@ import com.example.skeleton.helper.NotificationHelper
 import com.example.skeleton.helper.PackageHelper
 import com.example.skeleton.helper.UsageStatsHelper.queryTodayUsage
 import com.example.skeleton.model.UsageRecord
+import java.lang.ref.WeakReference
 import java.util.concurrent.locks.ReentrantLock
 
 /*
@@ -40,6 +40,10 @@ import java.util.concurrent.locks.ReentrantLock
  */
 
 class MyService : Service() {
+    class MyBinder(myService: MyService) : Binder() {
+        val service = WeakReference(myService)
+    }
+    private val binder = MyBinder(this)
     private var mLastQueryTime: Long = 0
     private var mTimer: Timer? = null
     private var mTodayUsages = HashMap<String, Long>()
@@ -72,7 +76,7 @@ class MyService : Service() {
 
     override fun onBind(p0: Intent?): IBinder? {
         Logger.d("MyService", "onBind")
-        return null
+        return binder
     }
 
     override fun onRebind(intent: Intent?) {
