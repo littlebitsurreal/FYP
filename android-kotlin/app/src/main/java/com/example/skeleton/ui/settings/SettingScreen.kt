@@ -329,7 +329,10 @@ class SettingScreen : BaseController() {
         super.onAttach(view)
 
         val t = store().view.state.usageLimit
+        mForegroundSwitch?.isChecked = store().view.state.isForegroundOn
         mSetAppUsageLimit?.content?.text = "Daily App Usage Limit - " + if (t < 60) "$t minutes" else "${t / 60} hour ${t % 60} minutes"
+        mStrictModeSwitch?.isChecked = store().view.state.isStrictModeOn
+        mReminderSwitch?.isChecked = store().view.state.isReminderOn
     }
 
     override fun onDetach(view: View) {
@@ -355,6 +358,7 @@ class SettingScreen : BaseController() {
         MainApplication.store().view.dispatch(ViewStore.Action.SetReminder(isChecked))
 
         mStrictModeSwitch?.isEnabled = isChecked
+        mSetAppUsageLimit?.isEnabled = isChecked
     }
     private val onReminderTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
