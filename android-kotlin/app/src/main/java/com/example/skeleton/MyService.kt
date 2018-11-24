@@ -8,6 +8,7 @@ import com.example.skeleton.helper.UsageStatsHelper
 import java.util.Timer
 import java.util.TimerTask
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -46,6 +47,7 @@ class MyService : Service() {
     class MyBinder(myService: MyService) : Binder() {
         val service = WeakReference(myService)
     }
+
     private val binder = MyBinder(this)
     private var mLastQueryTime: Long = 0
     private var mTimer: Timer? = null
@@ -63,7 +65,15 @@ class MyService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground()
             registerScreenUnlockReceiver()
+        } else {
+            try {
+                if (JSONObject(getSharedPreferences("redux", Context.MODE_PRIVATE).getString("view", "")).getBoolean("isForegroundOn")) {
+                    startForeground()
+                }
+            } catch (e: Exception) {
+            }
         }
+
         loadRedux()
         loadUsages()
         loadNotTrackingList()
@@ -76,7 +86,10 @@ class MyService : Service() {
         Logger.d("MyService", "onDestroy")
         mTimer?.cancel()
         sendBroadcast(Intent(this, ServiceEndReceiver::class.java))
-        unregisterReceiver(ScreenUnlockReceiver())
+        try {
+            unregisterReceiver(ScreenUnlockReceiver())
+        } catch (e: Exception) {
+        }
 
         super.onDestroy()
     }
@@ -127,11 +140,12 @@ class MyService : Service() {
                 .setContentTitle(resources.getString(R.string.app_name))
                 .setContentText("Tracking App Usage")
                 .setLargeIcon(icon)
-                .setSmallIcon(R.drawable.notification_template_icon_low_bg)
+                .setSmallIcon(R.drawable.ic_timeline)
+                .setVisibility(Notification.VISIBILITY_SECRET)
                 .setOngoing(true)
                 .setContentIntent(pendingIntent)
                 .build()
-        startForeground(System.currentTimeMillis().toInt() % 10000, notification) //get a random id
+        startForeground(50, notification) //get a random id
     }
 
     fun stopForeground() {
@@ -161,11 +175,7 @@ class MyService : Service() {
             override fun run() {
                 if (lock.tryLock()) {
                     val result = UsageStatsHelper.getLatestEvent(this@MyService, usageStatsManager, mLastQueryTime, System.currentTimeMillis())
-                    val foregroundEvent = if (result.records.isEmpty()) {
-                        null
-                    } else {
-                        result.records.last()
-                    }
+                    val foregroundEvent = result.foregroundPackageName
 
                     if (result.lastEndTime != 0L) {
                         mLastQueryTime = result.lastEndTime
@@ -175,12 +185,11 @@ class MyService : Service() {
                     }
 
                     addUsages(result.records)
-
-                    if (foregroundEvent != null && !foregroundEvent.packageName.contains("skeleton")) {
-                        if (lastForegroundPackageName != foregroundEvent.packageName) {
-                            onAppSwitch(foregroundEvent.packageName)
+                    if (foregroundEvent != null && !foregroundEvent.contains("skeleton")) {
+                        if (lastForegroundPackageName != foregroundEvent) {
+                            onAppSwitch(foregroundEvent)
                         }
-                        lastForegroundPackageName = foregroundEvent.packageName
+                        lastForegroundPackageName = foregroundEvent
                     }
                 }
                 lock.unlock()
@@ -202,8 +211,7 @@ class MyService : Service() {
                 if (!isStrictModeOn) {
                     NotificationHelper.show(
                             this,
-                            "Usage Monitor",
-                            "You have used ${PackageHelper.getAppName(this, packageName)} for ${CalendarHelper.toReadableDuration(t)}. " +
+                            "You have used ${PackageHelper.getAppName(this, packageName)} for ${CalendarHelper.toReadableDuration(t)}. ",
                                     "Why not take a break?",
 //                            packageName.hashCode()
                             1
