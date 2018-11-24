@@ -12,6 +12,7 @@ import java.io.File
 
 object UsageStatsHelper {
     data class Result(val records: List<UsageRecord>, val lastEndTime: Long)
+
     const val HOUR_24 = 1000 * 60 * 60 * 24L
     private var mLastForegroundEvent: String? = null
     private var mLastTimeStamp: Long = 0
@@ -31,13 +32,13 @@ object UsageStatsHelper {
             if (eventType == MOVE_TO_BACKGROUND && mLastForegroundEvent == packageName && timeStamp > mLastTimeStamp) {
                 mLastForegroundEvent?.let {
                     recordUsage(context, it, mLastTimeStamp, timeStamp - mLastTimeStamp)
+                    records.add(UsageRecord(packageName, mLastTimeStamp, timeStamp - mLastTimeStamp))
                 }
                 mLastForegroundEvent = null
                 lastEndTime = timeStamp
             } else if (eventType == MOVE_TO_FOREGROUND) {
                 mLastForegroundEvent = packageName
                 mLastTimeStamp = timeStamp
-                records.add(UsageRecord(packageName, timeStamp, timeStamp - mLastTimeStamp))
             }
         }
         return Result(records, lastEndTime)
@@ -45,7 +46,7 @@ object UsageStatsHelper {
 
     private fun recordUsage(context: Context, packageName: String, startTime: Long, duration: Long) {
         Logger.d("recordUsage", "$packageName   from ${CalendarHelper.getDate(startTime)}  -  ${duration / 1000}s")
-        val filename = CalendarHelper.getDayCondensed(startTime)
+        val filename = CalendarHelper.getDateCondensed(startTime)
         val path = File(context.filesDir.path + "/" + filename)
         CsvHelper.write(path, listOf(UsageRecord(packageName, startTime, duration)))
     }
@@ -56,7 +57,7 @@ object UsageStatsHelper {
         val records = arrayListOf<UsageRecord>()
 
         for (i in startTime..currentTime step HOUR_24) {
-            val filename = CalendarHelper.getDayCondensed(i)
+            val filename = CalendarHelper.getDateCondensed(i)
             val file = File(context.filesDir.path + "/" + filename)
             records.addAll(CsvHelper.read(file))
         }
@@ -73,7 +74,7 @@ object UsageStatsHelper {
     }
 
     fun queryTodayUsage(context: Context): List<UsageRecord> {
-        return queryUsage(context, CalendarHelper.getDayCondensed(System.currentTimeMillis()))
+        return queryUsage(context, CalendarHelper.getDateCondensed(System.currentTimeMillis()))
     }
 
     fun query24hUsage(context: Context): List<UsageRecord> {
@@ -84,14 +85,18 @@ object UsageStatsHelper {
         val pref = context.getSharedPreferences(UsageDigest.TAG, Context.MODE_PRIVATE)
         val all = pref.all
         var sum = 0L
+        var count = 0
         for ((_, value) in all) {
             val t = UsageDigest.fromJson(JSONObject(value as? String)).totalTime
-            sum += t
+            if (t != 0L) {
+                sum += t
+                count += 1
+            }
         }
-        if (sum == 0L || all.isEmpty()) {
+        if (count == 0 || all.isEmpty()) {
             return 0L
         } else {
-            return (sum / all.size)
+            return (sum / count)
         }
     }
 }
