@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import com.example.skeleton.MainApplication
 import com.example.skeleton.R
@@ -42,10 +43,12 @@ class SettingScreen : BaseController() {
     }
 
     private fun setup(context: Context): View {
-        val layout = LinearLayout(context)
+        val scrollView = ScrollView(context)
+        val baseLayout = LinearLayout(context)
         val actionBar = setupActionBar(context)
         val generalHeading = SettingSubheading(context)
         val notTrackingList = SettingMore(context)
+        val setAppUsageLimit = SettingMore(context)
         val reminderHeading = SettingSubheading(context)
         val reminderLayout = setupReminderLayout(context)
         val strictModeLayout = setupStrictModeLayout(context)
@@ -55,7 +58,9 @@ class SettingScreen : BaseController() {
         val privacyPolicy = SettingMore(context)
 //        val setAppUsageLimit = SettingMore(context)
 
-        layout.orientation = LinearLayout.VERTICAL
+        mSetAppUsageLimit = setAppUsageLimit
+
+        baseLayout.orientation = LinearLayout.VERTICAL
 
         generalHeading.apply {
             text = "GENERAL"
@@ -71,6 +76,11 @@ class SettingScreen : BaseController() {
         reminderHeading.apply {
             text = "REMINDER"
             setPadding(margin)
+        }
+        setAppUsageLimit.apply {
+            title.text = "Set App Usage Limit"
+            setPadding(margin)
+            setOnTouchListener(onSetAppUsageLimit)
         }
 
         otherHeading.apply {
@@ -96,14 +106,7 @@ class SettingScreen : BaseController() {
             setOnTouchListener(onPrivacyPolicyTouch)
         }
 
-//        setAppUsageLimit.apply {
-//            title.text = "Set App Usage Limit"
-//            content.text = "Customize for your individual apps"
-//            setPadding(margin)
-//            setOnTouchListener(onSetAppUsageLimit)
-//        }
-
-        layout.apply {
+        baseLayout.apply {
             addView(actionBar, LP.frame(LP.MATCH_PARENT, dp(50)).build())
             addView(generalHeading)
             addView(notTrackingList)
@@ -111,6 +114,8 @@ class SettingScreen : BaseController() {
             addView(reminderLayout)
             addView(SettingDivider(context))
             addView(strictModeLayout)
+            addView(SettingDivider(context))
+            addView(setAppUsageLimit)
             addView(otherHeading)
             addView(aboutThisApp)
             addView(SettingDivider(context))
@@ -119,7 +124,9 @@ class SettingScreen : BaseController() {
             addView(privacyPolicy)
         }
 
-        return layout
+        scrollView.addView(baseLayout)
+
+        return scrollView
     }
 
     private fun setupActionBar(context: Context): ActionBar {
@@ -131,12 +138,13 @@ class SettingScreen : BaseController() {
                 setTextColor(ResourceHelper.color(R.color.primary))
                 text = "Setting"
                 Touchable.make(this@apply)
+                setOnClickListener { popController() }
             }
 
             elevation = 2f
             setBackgroundColor(Color.WHITE)
 
-            addLeftButton(R.drawable.ic_arrow_back_24dp, View.OnClickListener { _ -> popController() })
+            addLeftButton(R.drawable.ic_arrow_back_24dp, View.OnClickListener { popController() })
             addLeftView(title)
         }
     }
