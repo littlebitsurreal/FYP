@@ -102,29 +102,29 @@ class MyService : Service() {
         }
         super.onTaskRemoved(rootIntent)
     }
-    private fun startForeground() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val intent = Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-            val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
-            val channel = NotificationChannel("default", "Channel Name", NotificationManager.IMPORTANCE_DEFAULT)
-            channel.description = "Channel Description"
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+    fun startForeground() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
-            val icon = BitmapFactory.decodeResource(resources, R.drawable.elephant)
+        val icon = BitmapFactory.decodeResource(resources, R.drawable.elephant)
 
-            val notification = NotificationCompat.Builder(this, "default")
-                    .setContentTitle(resources.getString(R.string.app_name))
-                    .setContentText("Tracking App Usage")
-                    .setLargeIcon(icon)
-                    .setSmallIcon(R.drawable.notification_template_icon_low_bg)
-                    .setOngoing(true)
-                    .setContentIntent(pendingIntent)
-                    .build()
-            startForeground(System.currentTimeMillis().toInt() % 10000, notification)
+        val notification = NotificationCompat.Builder(this, "default")
+                .setContentTitle(resources.getString(R.string.app_name))
+                .setContentText("Tracking App Usage")
+                .setLargeIcon(icon)
+                .setSmallIcon(R.drawable.notification_template_icon_low_bg)
+                .setOngoing(true)
+                .setContentIntent(pendingIntent)
+                .build()
+        startForeground(System.currentTimeMillis().toInt() % 10000, notification) //get a random id
+    }
+
+    fun stopForeground() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            stopForeground(true)
         }
     }
     private fun registerScreenUnlockReceiver() {
@@ -134,6 +134,7 @@ class MyService : Service() {
     }
     // endregion
 
+    // Events
     private fun startForegroundListener() {
         val timer = Timer(true)
         var lastForegroundPackageName: String? = null
@@ -201,4 +202,5 @@ class MyService : Service() {
             mTodayUsages[r.packageName] = (mTodayUsages[r.packageName] ?: 0) + r.duration
         }
     }
+    //endregion
 }
