@@ -150,7 +150,6 @@ class MyService : Service() {
 
         val monitoringTask = object : TimerTask() {
             val lock = ReentrantLock()
-
             override fun run() {
                 if (lock.tryLock()) {
                     val result = UsageStatsHelper.getLatestEvent(this@MyService, usageStatsManager, mLastQueryTime, System.currentTimeMillis())
@@ -169,7 +168,7 @@ class MyService : Service() {
 
                     addUsages(result.records)
 
-                    if (foregroundEvent != null) {
+                    if (foregroundEvent != null && !foregroundEvent.packageName.contains("skeleton")) {
                         if (lastForegroundPackageName != foregroundEvent.packageName) {
                             onAppSwitch(foregroundEvent.packageName)
                         }
@@ -181,17 +180,35 @@ class MyService : Service() {
         }
         val updateServerTask = UpdateServerTask(this)
         timer.schedule(monitoringTask, 0, AppConfig.TIMER_CHECK_PERIOD)
-        timer.schedule(updateServerTask, 10000, AppConfig.TIMER_UPDATE_SERVER_PERIOD)
+        timer.schedule(updateServerTask, 30000, AppConfig.TIMER_UPDATE_SERVER_PERIOD)
     }
 
     private fun onAppSwitch(packageName: String) {
         val t = mTodayUsages[packageName] ?: 0
         Logger.d("onAppSwitch", "$packageName - usage: ${t
-                / 60000}min  limit: ${mUsageLimit / 60000}  In NotTrackingList: ${mNotTrackingList.contains(packageName)}")
+                / 60000}min  limit: $usageLimit  In NotTrackingList: ${mNotTrackingList?.contains(packageName)}")
 
-        if (t >= mUsageLimit && !mNotTrackingList.contains(packageName)) {
-            NotificationHelper.show(this, "Usage Monitor",
-                    "You have used ${PackageHelper.getAppName(this, packageName)} for ${CalendarHelper.toReadableDuration(t)}", packageName.hashCode())
+        if (t >= usageLimit * 60000 && mNotTrackingList?.contains(packageName) == false) {
+            if (isReminderOn) {
+                // TODO: add this app into exeption
+                if (!isStrictModeOn) {
+                    NotificationHelper.show(
+                            this,
+                            "Usage Monitor",
+                            "You have used ${PackageHelper.getAppName(this, packageName)} for ${CalendarHelper.toReadableDuration(t)}. " +
+                                    "Why not take a break?",
+//                            packageName.hashCode()
+                            1
+                    )
+                } else {
+                    val intent = Intent(this, BlockerActivity::class.java)
+                    intent.flags = FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                }
+            }
+        }
+    }
+
         }
     }
 
