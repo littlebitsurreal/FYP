@@ -47,6 +47,7 @@ class MyService : Service() {
     private var mReminderOn = true
     private var mStrictMode = true
     private var mUsageLimit = 30 * 60 * 1000
+    private var mToday: String = ""
 
     override fun onCreate() {
         super.onCreate()
@@ -192,12 +193,17 @@ class MyService : Service() {
 
     private fun loadUsages() {
         val records = queryTodayUsage(this)
+        mTodayUsages = HashMap()
+        mToday = CalendarHelper.getDate(System.currentTimeMillis())
         for (r in records) {
             mTodayUsages[r.packageName] = (mTodayUsages[r.packageName] ?: 0) + r.duration
         }
     }
 
     private fun addUsages(records: List<UsageRecord>) {
+        if (records.isNotEmpty() && CalendarHelper.getDate(records.first().starTime) != mToday) {
+            loadUsages()
+        }
         for (r in records) {
             mTodayUsages[r.packageName] = (mTodayUsages[r.packageName] ?: 0) + r.duration
         }
