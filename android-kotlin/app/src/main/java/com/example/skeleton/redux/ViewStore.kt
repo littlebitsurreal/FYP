@@ -9,29 +9,35 @@ class ViewStore {
     // State
     data class State(
             val agreeTermsConditions: Boolean = false,
-            val reminderOn: Boolean = false,
-            val strictModeOn: Boolean = false
+            val isReminderOn: Boolean = false,
+            val isStrictModeOn: Boolean = false,
+            val foregroundOn: Boolean = false,
+            val usageLimit: Int = 30,
+            val isNotTrackingListUpdating: Boolean = false
     )
 
     // Actions
     sealed class Action {
         class _PresistenceRestore(val state: State) : Action()
         class AgreeTermsConditions : Action()
-        class setReminder(val on: Boolean) : Action()
-        class setStrictMode(val on: Boolean) : Action()
+        class SetReminder(val on: Boolean) : Action()
+        class SetStrictMode(val on: Boolean) : Action()
+        class SetForeground(val on: Boolean) : Action()
+        class SetUsageLimit(val time: Int) : Action()
+        class UpdateNotTrackingListBegin : Action()
+        class UpdateNotTrackingListComplete : Action()
     }
 
     companion object {
-        private const val TAG = "ViewStore"
-
         // persistence
         @Throws(JSONException::class, NullPointerException::class)
         fun load(json: JSONObject?): State? {
             if (json == null) return null
             return State(
                     agreeTermsConditions = json.getBoolean("agreeTermsConditions"),
-                    reminderOn = json.getBoolean("reminderOn"),
-                    strictModeOn = json.getBoolean("strictModeOn")
+                    isReminderOn = json.getBoolean("isReminderOn"),
+                    isStrictModeOn = json.getBoolean("isStrictModeOn"),
+                    usageLimit = json.getInt("usageLimit")
             )
         }
 
@@ -39,8 +45,9 @@ class ViewStore {
         fun save(state: State): JSONObject {
             return JSONObject()
                     .put("agreeTermsConditions", state.agreeTermsConditions)
-                    .put("reminderOn", state.reminderOn)
-                    .put("strictModeOn", state.strictModeOn)
+                    .put("isReminderOn", state.isReminderOn)
+                    .put("isStrictModeOn", state.isStrictModeOn)
+                    .put("usageLimit", state.usageLimit)
         }
 
         // Reducer
@@ -52,11 +59,23 @@ class ViewStore {
                 is Action.AgreeTermsConditions -> {
                     state.copy(agreeTermsConditions = true)
                 }
-                is Action.setReminder -> {
-                    state.copy(reminderOn = action.on)
+                is Action.SetReminder -> {
+                    state.copy(isReminderOn = action.on)
                 }
-                is Action.setStrictMode -> {
-                    state.copy(strictModeOn = action.on)
+                is Action.SetStrictMode -> {
+                    state.copy(isStrictModeOn = action.on)
+                }
+                is Action.SetForeground -> {
+                    state.copy(foregroundOn = action.on)
+                }
+                is Action.SetUsageLimit -> {
+                    state.copy(usageLimit = action.time)
+                }
+                is Action.UpdateNotTrackingListBegin -> {
+                    state.copy(isNotTrackingListUpdating = true)
+                }
+                is Action.UpdateNotTrackingListComplete -> {
+                    state.copy(isNotTrackingListUpdating = false)
                 }
                 else -> state
             }
