@@ -14,8 +14,11 @@ object AppConfig {
             "staging" -> {
                 SERVER_ADDRESS = "http://192.168.40.1:8080/"
             }
+            "prod" -> {
+                SERVER_ADDRESS = "http://35.241.72.8:8080/"
+            }
             else -> {
-                SERVER_ADDRESS = "http://192.168.40.1:8080/"
+                SERVER_ADDRESS = "http://35.241.72.8:8080/"
             }
         }
     }

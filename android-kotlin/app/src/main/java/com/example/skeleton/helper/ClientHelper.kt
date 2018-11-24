@@ -22,7 +22,6 @@ object ClientHelper {
         fun onSuccess()
         fun onFail(code: FailCode)
     }
-
     fun checkConnectivity(): Boolean {
         val client = OkHttpClient()
         try {

@@ -27,6 +27,7 @@ import com.example.skeleton.helper.ResourceHelper
 import com.example.skeleton.helper.ResourceHelper.color
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.helper.ScreenUnlockHelper
+import com.example.skeleton.helper.Touchable
 import com.example.skeleton.helper.UsageStatsHelper
 import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.model.UsageSummary
@@ -86,6 +87,8 @@ class UsageSummaryScreen : BaseController() {
                 textSize = 22f
                 setTextColor(color(R.color.primary))
                 text = "Usage Record"
+                Touchable.make(this@apply)
+                setOnClickListener { popController() }
             }
 
             val spinner = Spinner(context).apply {
@@ -204,18 +207,18 @@ class UsageSummaryScreen : BaseController() {
                         unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
                     }
                     Mode.Yesterday -> {
-                        list = UsageSummary.getFilteredSummary(it, arrayListOf(CalendarHelper.getDayCondensed(time - HOUR_24)))
+                        list = UsageSummary.getFilteredSummary(it, arrayListOf(CalendarHelper.getDateCondensed(time - HOUR_24)))
                         unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
                     }
                     Mode.Day7 -> {
                         list = UsageSummary.getFilteredSummary(it,
-                                ((time - 6 * HOUR_24)..time step HOUR_24).map { CalendarHelper.getDayCondensed(it) }
+                                ((time - 6 * HOUR_24)..time step HOUR_24).map { CalendarHelper.getDateCondensed(it) }
                         )
                         unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 7)
                     }
                     Mode.Day30 -> {
                         list = UsageSummary.getFilteredSummary(it,
-                                ((time - 29 * HOUR_24)..time step HOUR_24).map { CalendarHelper.getDayCondensed(it) }
+                                ((time - 29 * HOUR_24)..time step HOUR_24).map { CalendarHelper.getDateCondensed(it) }
                         )
                         unlockCount = ScreenUnlockHelper.getNDayUnlockCount(it, 30)
                     }

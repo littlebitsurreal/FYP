@@ -49,7 +49,7 @@ data class UsageSummary(
         }
 
         fun filter(context: Context, l: List<UsageSummary>): List<UsageSummary> {
-            val list = NotTrackingListHelper.getNotTrackingList(context)
+            val list = NotTrackingListHelper.loadNotTrackingList(context)
             return l.filter { !list.contains(it.packageName) }
         }
 

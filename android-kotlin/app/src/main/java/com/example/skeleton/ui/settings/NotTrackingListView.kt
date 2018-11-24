@@ -3,6 +3,7 @@ package com.example.skeleton.ui.settings
 import android.content.Context
 import android.support.v7.widget.AppCompatCheckBox
 import android.view.Gravity
+import android.view.MotionEvent
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -57,6 +58,14 @@ class NotTrackingListView(context: Context, onCheckChange: ((NotTrackingRecord, 
         val lp = LinearLayout.LayoutParams(LP.MATCH_PARENT, LP.WRAP_CONTENT)
         layoutParams = lp
         isClickable = true
+
+        setOnTouchListener { _, event ->
+            if (event?.action == MotionEvent.ACTION_UP) {
+                checkBox.isChecked = !checkBox.isChecked
+                return@setOnTouchListener false
+            }
+            true
+        }
     }
 
     fun bind(record: NotTrackingRecord) {

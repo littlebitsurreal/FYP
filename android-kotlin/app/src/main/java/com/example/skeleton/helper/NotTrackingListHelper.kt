@@ -5,7 +5,7 @@ import com.example.skeleton.model.NotTrackingRecord
 import com.example.skeleton.model.UsageSummary
 
 object NotTrackingListHelper {
-    fun getNotTrackingRecords(context: Context): List<NotTrackingRecord> {
+    private fun getNotTrackingRecords(context: Context): List<NotTrackingRecord> {
         val pref = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE)
         val list = pref.all
         // key = package name
@@ -13,7 +13,7 @@ object NotTrackingListHelper {
         return list.map { NotTrackingRecord(it.value.toString(), it.key, true) }
     }
 
-    fun getNotTrackingList(context: Context): List<String> {
+    fun loadNotTrackingList(context: Context): List<String> {
         val pref = context.getSharedPreferences("NotTrackingListHelper", Context.MODE_PRIVATE)
         val list = pref.all
         return list.keys.toList()
@@ -40,7 +40,7 @@ object NotTrackingListHelper {
     fun getList(context: Context): List<NotTrackingRecord> {
         val time = System.currentTimeMillis()
         val summary = UsageSummary.getSummary(context,
-                ((time - 2 * UsageStatsHelper.HOUR_24)..time step UsageStatsHelper.HOUR_24).map { CalendarHelper.getDayCondensed(it) }
+                ((time - 2 * UsageStatsHelper.HOUR_24)..time step UsageStatsHelper.HOUR_24).map { CalendarHelper.getDateCondensed(it) }
         )
         val trackingList = getNotTrackingRecords(context)
         val hashMap = hashMapOf<String, NotTrackingRecord>()

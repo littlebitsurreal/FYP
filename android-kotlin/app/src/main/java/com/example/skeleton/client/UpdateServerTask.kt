@@ -19,9 +19,6 @@ class UpdateServerTask(val context: Context) : TimerTask() {
     }
 
     override fun run() {
-        if (!ClientHelper.checkConnectivity()) {
-            return
-        }
         val pref = context.getSharedPreferences("MyService", Context.MODE_PRIVATE)
         val prefEdit = context.getSharedPreferences("MyService", Context.MODE_PRIVATE).edit()
         val allDays = context.getSharedPreferences("UsageDigest", Context.MODE_PRIVATE).all.keys
@@ -37,7 +34,8 @@ class UpdateServerTask(val context: Context) : TimerTask() {
             prefEdit.commit()
             updateLock.unlock()
         }
-        if (updatedDays == allDays) return
+
+        if (toBeUpdate.isEmpty() || !ClientHelper.checkConnectivity()) return
 
         for (day in toBeUpdate) {
             val digest = UsageDigest.load(context, day)

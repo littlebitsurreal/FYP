@@ -11,20 +11,20 @@ object Touchable {
                 MotionEvent.ACTION_DOWN -> {
                     if (v.isEnabled) {
                         v.animate().cancel()
-                        v.animate().alpha(0.2f).duration = 150
+                        v.animate().alpha(0.2f).duration = 50
                         return@setOnTouchListener true
                     }
                 }
                 MotionEvent.ACTION_CANCEL -> {
                     if (v.isEnabled) {
                         v.animate().cancel()
-                        v.animate().alpha(1.0f).duration = 150
+                        v.animate().alpha(1.0f).duration = 50
                     }
                 }
                 MotionEvent.ACTION_UP -> {
                     if (v.isEnabled) {
                         v.animate().cancel()
-                        v.animate().alpha(1.0f).duration = 150
+                        v.animate().alpha(1.0f).duration = 50
                         v.performClick()
                     }
                 }

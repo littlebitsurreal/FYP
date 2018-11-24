@@ -39,6 +39,19 @@ class SettingMore(context: Context) : RelativeLayout(context) {
                 .build())
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        if (enabled) {
+            title.alpha = 1f
+            content.alpha = 1f
+            more.alpha = 1f
+        } else {
+            title.alpha = 0.5f
+            content.alpha = 0.5f
+            more.alpha = 0.5f
+        }
+        super.setEnabled(enabled)
+    }
+
     fun setPadding(margin: Int) {
         setPadding(margin * 2, margin, margin * 2, margin)
         more.setPadding(margin * 2, 0, 0, 0)

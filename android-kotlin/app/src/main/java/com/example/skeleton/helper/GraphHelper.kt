@@ -118,7 +118,7 @@ object GraphHelper {
         val series = arrayListOf<BarEntry>()
         var i = 1f
         for (t in (endTime - 6 * HOUR_24)..endTime step HOUR_24) {
-            val d = UsageDigest.loadFiltered(context, CalendarHelper.getDayCondensed(t))
+            val d = UsageDigest.loadFiltered(context, CalendarHelper.getDateCondensed(t))
             series.add(BarEntry(i, (d.totalTime ?: 0) / 3600000f))
             i += 1
         }

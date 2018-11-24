@@ -31,7 +31,8 @@ class AboutThisAppScreen : BaseController() {
         textView.apply {
             movementMethod = ScrollingMovementMethod()
             setPadding(dp(26), 0, dp(26), 0)
-            text = "\nThis app is developed by Oscar Chau as a part of the undergraduate final year project.\n\nPlease contact at shdoskar at gmail dot com."
+            text = "\nThis app is developed by Oscar Chau as a part of the undergraduate final year project.\n\n" +
+                    "If you find a bug or have any suggestion, please feel free to contact me at shdoskar[at]gmail[dot]com."
         }
 
         contentLayout.apply {

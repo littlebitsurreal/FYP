@@ -6,7 +6,6 @@ import com.example.skeleton.helper.CsvHelper
 import com.example.skeleton.helper.Logger
 import com.example.skeleton.helper.NotTrackingListHelper
 import com.example.skeleton.helper.ScreenUnlockHelper
-import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
 import com.example.skeleton.iface.SerializableToJson
 import org.json.JSONArray
 import org.json.JSONObject
@@ -61,14 +60,14 @@ data class UsageDigest(
 
         fun loadFiltered(context: Context, days: List<String>): List<UsageDigest> {
             val l = days.map { load(context, it) }
-            val list = NotTrackingListHelper.getNotTrackingList(context)
+            val list = NotTrackingListHelper.loadNotTrackingList(context)
             return l.map {
                 it.copy(summaries = it.summaries.filter { !list.contains(it.packageName) })
             }
         }
 
         fun loadFiltered(context: Context, day: String): UsageDigest {
-            val list = NotTrackingListHelper.getNotTrackingList(context)
+            val list = NotTrackingListHelper.loadNotTrackingList(context)
             val digest = load(context, day)
             return digest.copy(summaries = digest.summaries.filter { !list.contains(it.packageName) })
         }
@@ -78,8 +77,7 @@ data class UsageDigest(
         }
 
         fun load(context: Context, day: String): UsageDigest {
-            if (day == CalendarHelper.getDayCondensed(System.currentTimeMillis()) ||
-                    day == CalendarHelper.getDayCondensed(System.currentTimeMillis() - HOUR_24)) {
+            if (day == CalendarHelper.getDateCondensed(System.currentTimeMillis())) {
                 return make(context, day)
             }
 

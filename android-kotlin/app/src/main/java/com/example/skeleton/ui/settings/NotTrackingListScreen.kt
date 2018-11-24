@@ -10,14 +10,15 @@ import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.example.skeleton.MainApplication.Companion.store
 import com.example.skeleton.R
 import com.example.skeleton.helper.LP
-import com.example.skeleton.helper.Logger
 import com.example.skeleton.helper.NotTrackingListHelper
 import com.example.skeleton.helper.ResourceHelper
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.helper.Touchable
 import com.example.skeleton.model.NotTrackingRecord
+import com.example.skeleton.redux.ViewStore
 import com.example.skeleton.ui.base.BaseController
 import com.example.skeleton.widget.ActionBar
 import com.example.skeleton.widget.NotTrackingListAdapter
@@ -71,7 +72,6 @@ class NotTrackingListScreen : BaseController() {
 
     override fun onAttach(view: View) {
         super.onAttach(view)
-        Logger.d("test", "Onattach")
         activity?.let {
             Thread {
                 val list = NotTrackingListHelper.getList(it)
@@ -83,13 +83,17 @@ class NotTrackingListScreen : BaseController() {
         }
     }
 
+    override fun onDetach(view: View) {
+        super.onDetach(view)
+        store().dispatch(ViewStore.Action.UpdateNotTrackingListBegin())
+    }
+
     private val onBackClick = View.OnClickListener {
         popController()
     }
 
     private val onCheckChange: ((record: NotTrackingRecord, isChecked: Boolean) -> Unit) =
             { record: NotTrackingRecord, isChecked: Boolean ->
-                Logger.d("test", "onCheckChange:   ${record.packageName} - $isChecked")
                 activity?.let {
                     record.isIgnored = isChecked
                     if (isChecked) {

@@ -28,7 +28,7 @@ object NotificationHelper {
 
             val notification = NotificationCompat.Builder(context, "default")
                     .setTicker("Exceed Usage Limit")
-                    .setLargeIcon(icon)
+                    .setSmallIcon(R.drawable.elephant)
                     .setContentTitle(title)
                     .setContentText(content)
                     .setContentIntent(pendingIntent)
