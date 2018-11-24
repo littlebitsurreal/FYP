@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import android.support.v7.widget.SwitchCompat
 import android.view.Gravity
 import android.view.MotionEvent
@@ -14,6 +15,7 @@ import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import com.example.skeleton.MainApplication
+import com.example.skeleton.MainApplication.Companion.store
 import com.example.skeleton.R
 import com.example.skeleton.helper.LP
 import com.example.skeleton.helper.ResourceHelper
@@ -25,17 +27,16 @@ import com.example.skeleton.widget.ActionBar
 import com.example.skeleton.widget.SettingDivider
 import com.example.skeleton.widget.SettingMore
 import com.example.skeleton.widget.SettingSubheading
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Consumer
-import io.reactivex.functions.Function
 
 @SuppressLint("ResourceType")
 class SettingScreen : BaseController() {
     private val margin = dp(13)
     private val mSubscriptions = CompositeDisposable()
+    private var mForegroundSwitch: SwitchCompat? = null
     private var mStrictModeSwitch: SwitchCompat? = null
     private var mReminderSwitch: SwitchCompat? = null
+    private var mSetAppUsageLimit: SettingMore? = null
 
     //redion Life Cycles
     override fun onCreateView(context: Context): View {
@@ -48,6 +49,7 @@ class SettingScreen : BaseController() {
         val actionBar = setupActionBar(context)
         val generalHeading = SettingSubheading(context)
         val notTrackingList = SettingMore(context)
+        val foregroundLayout = setupForegroundLayout(context)
         val setAppUsageLimit = SettingMore(context)
         val reminderHeading = SettingSubheading(context)
         val reminderLayout = setupReminderLayout(context)
@@ -56,7 +58,6 @@ class SettingScreen : BaseController() {
         val aboutThisApp = SettingMore(context)
         val faq = SettingMore(context)
         val privacyPolicy = SettingMore(context)
-//        val setAppUsageLimit = SettingMore(context)
 
         mSetAppUsageLimit = setAppUsageLimit
 
@@ -110,6 +111,7 @@ class SettingScreen : BaseController() {
             addView(actionBar, LP.frame(LP.MATCH_PARENT, dp(50)).build())
             addView(generalHeading)
             addView(notTrackingList)
+            addView(foregroundLayout)
             addView(reminderHeading)
             addView(reminderLayout)
             addView(SettingDivider(context))
@@ -146,6 +148,67 @@ class SettingScreen : BaseController() {
 
             addLeftButton(R.drawable.ic_arrow_back_24dp, View.OnClickListener { popController() })
             addLeftView(title)
+        }
+    }
+
+    private fun setupForegroundLayout(context: Context): RelativeLayout {
+        return RelativeLayout(context).apply {
+            val title = TextView(context)
+            val content = TextView(context)
+            val switch = object : SwitchCompat(context) {
+                override fun setEnabled(enabled: Boolean) {
+                    if (!enabled) {
+                        title.alpha = 0.5f
+                        content.alpha = 0.5f
+                        alpha = 0.3f
+                        isChecked = false
+                    } else {
+                        title.alpha = 1f
+                        content.alpha = 1f
+                        alpha = 1f
+                    }
+                    super.setEnabled(enabled)
+                }
+            }
+            title.apply {
+                textSize = 16f
+                setTextColor(Color.parseColor("#404040"))
+                id = 1
+            }
+            content.apply {
+                id = 2
+            }
+            switch.apply {
+                isSaveEnabled = false
+                id = 12497
+                trackTintList = ColorStateList(
+                        arrayOf(intArrayOf(android.R.attr.state_checked),
+                                intArrayOf(-android.R.attr.state_checked)),
+                        intArrayOf(Color.parseColor("#47d147"),
+                                Color.parseColor("#A3B0BA")))
+            }
+            setPadding(margin * 2, margin, margin * 2, margin)
+            switch.setPadding(margin * 2, 0, 0, 0)
+            addView(title)
+            addView(content, LP.relative(LP.MATCH_PARENT, LP.WRAP_CONTENT)
+                    .toLeftOf(switch.id)
+                    .belowOf(title.id)
+                    .build())
+            addView(switch, LP.relative(LP.WRAP_CONTENT, LP.WRAP_CONTENT)
+                    .alignParentEnd()
+                    .alignCenterVertical()
+                    .build())
+
+            mForegroundSwitch = switch
+            title.text = "Notification Bar"
+            content.text = "Turn this on if the app is not working properly."
+            switch.setOnCheckedChangeListener(onForegroundSwitchChange)
+            setOnTouchListener(onForegroundTouch)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                switch.isEnabled = false
+                switch.isChecked = true
+            }
         }
     }
 
@@ -265,16 +328,8 @@ class SettingScreen : BaseController() {
     override fun onAttach(view: View) {
         super.onAttach(view)
 
-        mSubscriptions.add(MainApplication.store().observe(MainApplication.store().view)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(mapReminder)
-                .distinctUntilChanged()
-                .subscribe(consumeReminder))
-        mSubscriptions.add(MainApplication.store().observe(MainApplication.store().view)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(mapStrictMode)
-                .distinctUntilChanged()
-                .subscribe(consumeStrictMode))
+        val t = store().view.state.usageLimit
+        mSetAppUsageLimit?.content?.text = "Daily App Usage Limit - " + if (t < 60) "$t minutes" else "${t / 60} hour ${t % 60} minutes"
     }
 
     override fun onDetach(view: View) {
@@ -284,27 +339,49 @@ class SettingScreen : BaseController() {
     //endregion
 
     //region UI Events
+    private val onForegroundSwitchChange = CompoundButton.OnCheckedChangeListener { _, isChecked ->
+        MainApplication.store().view.dispatch(ViewStore.Action.SetForeground(isChecked))
+    }
+    private val onForegroundTouch = View.OnTouchListener { _, event ->
+        if (event?.action == MotionEvent.ACTION_UP) {
+            mForegroundSwitch?.let {
+                it.isChecked = !it.isChecked
+            }
+            return@OnTouchListener false
+        }
+        true
+    }
     private val onReminderSwitchChange = CompoundButton.OnCheckedChangeListener { _, isChecked ->
-        MainApplication.store().view.dispatch(ViewStore.Action.setReminder(isChecked))
+        MainApplication.store().view.dispatch(ViewStore.Action.SetReminder(isChecked))
 
         mStrictModeSwitch?.isEnabled = isChecked
     }
     private val onReminderTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
-            mReminderSwitch?.isChecked = !(mReminderSwitch?.isChecked
-                    ?: return@OnTouchListener true)
+            mReminderSwitch?.let {
+                it.isChecked = !it.isChecked
+            }
+
             return@OnTouchListener false
         }
         true
     }
-
     private val onStrictModeSwitchChange = CompoundButton.OnCheckedChangeListener { _, isChecked ->
-        MainApplication.store().view.dispatch(ViewStore.Action.setStrictMode(isChecked))
+        MainApplication.store().view.dispatch(ViewStore.Action.SetStrictMode(isChecked))
     }
     private val onStrictModeTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
-            mStrictModeSwitch?.isChecked = !(mStrictModeSwitch?.isChecked
-                    ?: return@OnTouchListener true)
+            if (mStrictModeSwitch?.isEnabled == true) {
+                mStrictModeSwitch?.isChecked = !(mStrictModeSwitch?.isChecked
+                        ?: return@OnTouchListener true)
+            }
+            return@OnTouchListener false
+        }
+        true
+    }
+    private val onSetAppUsageLimit = View.OnTouchListener { _, event ->
+        if (event?.action == MotionEvent.ACTION_UP) {
+            pushController(SetAppUsageLimitScreen())
             return@OnTouchListener false
         }
         true
@@ -321,7 +398,8 @@ class SettingScreen : BaseController() {
             pushController(AboutThisAppScreen())
             return@OnTouchListener false
         }
-        true }
+        true
+    }
     private val onFaqTouch = View.OnTouchListener { _, event ->
         if (event?.action == MotionEvent.ACTION_UP) {
             pushController(FaqScreen())
@@ -335,28 +413,6 @@ class SettingScreen : BaseController() {
             return@OnTouchListener false
         }
         true
-    }
-//    private val onSetAppUsageLimit = View.OnTouchListener { _, event ->
-//        if (event?.action == MotionEvent.ACTION_UP) {
-//            pushController(SetAppUsageLimitScreen())
-//            return@OnTouchListener false
-//        }
-//        true
-//    }
-    //endregion
-
-    //region redux
-    private val mapReminder = Function<ViewStore.State, Boolean> { state ->
-        state.reminderOn
-    }
-    private val consumeReminder = Consumer<Boolean> { isChecked ->
-        mReminderSwitch?.isChecked = isChecked
-    }
-    private val mapStrictMode = Function<ViewStore.State, Boolean> { state ->
-        state.strictModeOn
-    }
-    private val consumeStrictMode = Consumer<Boolean> { isChecked ->
-        mStrictModeSwitch?.isChecked = isChecked
     }
     //endregion
 }
