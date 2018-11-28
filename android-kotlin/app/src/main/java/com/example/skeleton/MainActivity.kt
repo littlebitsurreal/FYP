@@ -12,6 +12,7 @@ import com.bluelinelabs.conductor.Conductor
 import com.bluelinelabs.conductor.Router
 import com.bluelinelabs.conductor.RouterTransaction
 import com.example.skeleton.MainApplication.Companion.store
+import com.example.skeleton.helper.NotTrackingListHelper
 import io.reactivex.disposables.CompositeDisposable
 import com.example.skeleton.ui.StartScreen
 import com.example.skeleton.helper.PermissionHelper
@@ -66,6 +67,8 @@ class MainActivity : AppCompatActivity() {
             mStoreRetained = true
             MainApplication.retainStore(this)
         }
+        val l = NotTrackingListHelper.loadNotTrackingList(this)
+        MainApplication.store().dispatch(ViewStore.Action.SetNotTrackingList(l))
 
         bindService(Intent(this, MyService::class.java), con, 0)
 
@@ -121,7 +124,10 @@ class MainActivity : AppCompatActivity() {
     //---------------------------------------------------------------
     override fun onBackPressed() {
         if (mRouter?.handleBack() != true) {
-            super.onBackPressed()
+            val startMain = Intent(Intent.ACTION_MAIN)
+            startMain.addCategory(Intent.CATEGORY_HOME)
+            startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(startMain)
         }
     }
     //---------------------------------------------------------------
@@ -158,14 +164,12 @@ class MainActivity : AppCompatActivity() {
             mBinder?.service?.get()?.stopForeground()
         }
     }
-    private val mapNotTracking = Function<ViewStore.State, Boolean> { state ->
-        state.isNotTrackingListUpdating
+    private val mapNotTracking = Function<ViewStore.State, Int> { state ->
+        state.notTrackingList.size
     }
-    private val consumeNotTracking = Consumer<Boolean> { isUpdating ->
-        if (isUpdating) {
-            mBinder?.service?.get()?.loadNotTrackingList()
-            store().dispatch(ViewStore.Action.UpdateNotTrackingListComplete())
-        }
+    private val consumeNotTracking = Consumer<Int> { count ->
+        mBinder?.service?.get()?.loadNotTrackingList()
+        store().dispatch(ViewStore.Action.UpdateNotTrackingListComplete())
     }
     //endregion
 }
