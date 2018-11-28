@@ -1,27 +1,13 @@
 <resources>
     <string name="app_name">H-Our</string>
-    <string name="splash_title">Loading</string>
-    <string name="login_title">Login</string>
-    <string name="login_submit">Submit</string>
-    <string name="login_name_hint">Name</string>
-    <string name="login_pass_hint">Pass</string>
-    <string name="login_formerr">Invalid form entry</string>
-    <string name="main_message">Hello %1$s</string>
-    <string name="main_next">next</string>
-    <string name="main_popup">popup</string>
-    <string name="dummy_close">close</string>
-    <string name="dummy_check">Checkbox Test</string>
-    <string name="start_subtitle">monitor your app usage</string>
+    <string name="start_subtitle">Time flies. Treasure your hours.</string>
     <string name="start_startbutton">Start</string>
     <string name="enable_doneBtn">Done</string>
     <string name="enable_allowbutton_title">Allow \"Usage Access\"</string>
     <string name="enable_allowbutton_hint">It is used to monitor your app usage</string>
     <string name="enable_done_title">Great!</string>
     <string name="enable_done_hint">You can now monitor your app usage</string>
-    <string name="enable_title">Enable Monitor</string>
-    <string name="messageview_time_hint">You have used for %1$s min</string>
-    <string name="main_usageoverview">USAGE\n<h1>%s</h1>\nTIME</string>
-    <string name="main_unlockoverview">UNLOCK\n<h2>%s</h2>\nCOUNT</string>
+    <string name="enable_title">Enable H-Our</string>
     <string name="setting_strictmode_title">Strict Mode</string>
     <string name="setting_strictmode_content">You are not allowed to use apps which exceed usage limit in strict mode</string>
 </resources>

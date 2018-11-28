@@ -34,7 +34,7 @@ class BlockerActivity : AppCompatActivity() {
     private fun setup(layout: FrameLayout) {
 
         val img = ImageView(this).apply {
-            setImageResource(R.drawable.elephant)
+            setImageResource(R.drawable.logo)
         }
         val textView = TextView(this).apply {
             text = "Your usage exceeds limit.\n Why not take a break?"
@@ -57,11 +57,11 @@ class BlockerActivity : AppCompatActivity() {
             setBackgroundColor(Color.parseColor("#AAAAAAAA"))
 
             addView(closeStrictModeTtext, LP.frame(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL)
-                    .setMargins(dp(20), dp(30), dp(20), 0)
+                    .setMargins(dp(20), dp(20), dp(20), 0)
                     .build())
-            addView(img, LP.frame(dp(120), dp(120), Gravity.CENTER).build())
+            addView(img, LP.frame(dp(200), dp(200), Gravity.CENTER).build())
             addView(textView, LP.frame(LP.MATCH_PARENT, LP.WRAP_CONTENT, Gravity.BOTTOM)
-                    .setMargins(dp(20), dp(100), dp(20), dp(100))
+                    .setMargins(dp(20), 0, dp(20), dp(60))
                     .build())
         }
     }

@@ -23,7 +23,7 @@ class SplashActivity : AppCompatActivity() {
         val img = ImageView(this)
 
         layout.setBackgroundColor(ResourceHelper.color(R.color.primary))
-        img.setImageResource(R.drawable.elephant)
+        img.setImageResource(R.drawable.logo)
 
         layout.addView(img, LP.frame(dp(120), dp(120), Gravity.CENTER).build())
         setContentView(layout)

@@ -134,7 +134,7 @@ class MyService : Service() {
         }
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
 
-        val icon = BitmapFactory.decodeResource(resources, R.drawable.elephant)
+        val icon = BitmapFactory.decodeResource(resources, R.drawable.logo)
 
         val notification = NotificationCompat.Builder(this, "default")
                 .setContentTitle(resources.getString(R.string.app_name))

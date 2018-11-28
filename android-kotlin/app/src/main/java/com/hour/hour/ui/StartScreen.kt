@@ -41,7 +41,7 @@ class StartScreen : BaseController() {
         layout.setBackgroundColor(color(R.color.primary))
 
         img.apply {
-            setImageResource(R.drawable.elephant)
+            setImageResource(R.drawable.logo)
         }
 
         title.apply {
@@ -84,7 +84,7 @@ class StartScreen : BaseController() {
         }
 
         layout.apply {
-            addView(img, LP.relative(dp(100), dp(100))
+            addView(img, LP.relative(dp(180), dp(180))
                     .aboveOf(TITLE_ID)
                     .alignCenterHorizontal()
                     .setMargins(0, 0, 0, dp(45))
