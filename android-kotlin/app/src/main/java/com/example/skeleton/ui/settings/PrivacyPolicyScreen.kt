@@ -18,7 +18,6 @@ import com.example.skeleton.widget.ActionBar
 
 class PrivacyPolicyScreen : BaseController() {
     override fun onCreateView(context: Context): View {
-
         return setup(context)
     }
 
@@ -31,7 +30,11 @@ class PrivacyPolicyScreen : BaseController() {
         textView.apply {
             movementMethod = ScrollingMovementMethod()
             setPadding(dp(26), 0, dp(26), 0)
-            text = "\nPASFIHASOF\nUASGFUSAKFASF\n"
+            text = "\nCollection of Information\n\n" +
+                    "We collect information about you and your use of our service,  your interactions with us and your apps usage time.\n\n\n" +
+                    "Use of Information\n\n" +
+                    "We use information to analyze and for research purpose. " +
+                    "Only statistics and result of analyze will be used. Individuals' information would not be disclosed to any party.\n\n"
         }
 
         contentLayout.apply {

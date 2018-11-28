@@ -13,7 +13,7 @@ import com.example.skeleton.helper.ResourceHelper
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.model.NotTrackingRecord
 
-class NotTrackingListView(context: Context, onCheckChange: ((NotTrackingRecord, Boolean) -> Unit)?) : LinearLayout(context) {
+class NotTrackingListView(context: Context, val onCheckChange: ((NotTrackingRecord, Boolean) -> Unit)?) : LinearLayout(context) {
     val margin = ResourceHelper.dp(14)
     val icon = ImageView(context)
     val appName = TextView(context)
@@ -22,24 +22,21 @@ class NotTrackingListView(context: Context, onCheckChange: ((NotTrackingRecord, 
     var record: NotTrackingRecord? = null
 
     init {
-        setup(onCheckChange)
+        setup()
     }
 
-    private fun setup(listener: ((NotTrackingRecord, Boolean) -> Unit)?) {
+    private fun setup() {
         setPadding(margin, margin, margin, margin)
 
         icon.apply {
             id = id@ 1
         }
 
+        checkBox.id = id@ 5
+
         appName.apply {
             textSize = 16f
             id = id@ 3
-        }
-
-        checkBox.setOnCheckedChangeListener { _, isChecked ->
-            listener?.invoke(record ?: return@setOnCheckedChangeListener, isChecked)
-            id = id@ 5
         }
 
         addView(icon, LP.linear(ResourceHelper.dp(40), ResourceHelper.dp(40))
@@ -69,10 +66,14 @@ class NotTrackingListView(context: Context, onCheckChange: ((NotTrackingRecord, 
     }
 
     fun bind(record: NotTrackingRecord) {
+        // change the checkbox listener before assignment its value
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            onCheckChange?.invoke(record, isChecked)
+        }
         icon.setImageDrawable(PackageHelper.getAppIcon(context, record.packageName))
         appName.text = record.appName
         packageName = record.packageName
-        checkBox.isChecked = record.isIgnored
+        checkBox.isChecked = recornd.isIgnored
         this.record = record
     }
 }

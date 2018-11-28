@@ -1,5 +1,6 @@
 package com.example.skeleton.helper
 
+import android.app.Notification
 import android.app.Notification.VISIBILITY_SECRET
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -30,17 +31,19 @@ object NotificationHelper {
                     .setContentTitle(title)
                     .setContentText(content)
                     .setContentIntent(pendingIntent)
-                    .setVisibility(VISIBILITY_SECRET)
+                    .setVisibility(Notification.VISIBILITY_SECRET)
                     .build()
             with(NotificationManagerCompat.from(context)) {
                 notify(id, notification)
             }
         } else {
             val notification = NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.elephant)
+                    .setTicker("Exceed Usage Limit")
+                    .setSmallIcon(R.drawable.ic_assistant)
                     .setContentTitle(title)
                     .setContentText(content)
                     .setContentIntent(pendingIntent)
+                    .setVisibility(Notification.VISIBILITY_SECRET)
                     .build()
             with(NotificationManagerCompat.from(context)) {
                 notify(id, notification)

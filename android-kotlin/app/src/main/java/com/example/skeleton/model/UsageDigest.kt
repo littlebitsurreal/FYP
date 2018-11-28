@@ -69,7 +69,8 @@ data class UsageDigest(
         fun loadFiltered(context: Context, day: String): UsageDigest {
             val list = NotTrackingListHelper.loadNotTrackingList(context)
             val digest = load(context, day)
-            return digest.copy(summaries = digest.summaries.filter { !list.contains(it.packageName) })
+            val s = digest.summaries.filter { !list.contains(it.packageName) }
+            return digest.copy(totalTime = s.map { it.useTimeTotal }.sum(), summaries = s)
         }
 
         fun load(context: Context, days: List<String>): List<UsageDigest> {

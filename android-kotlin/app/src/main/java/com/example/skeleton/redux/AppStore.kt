@@ -10,7 +10,6 @@ import redux.api.Store
 
 @Suppress("unused", "UNUSED_PARAMETER")
 class AppStore {
-    var client = ClientStore.createStore()
     var view = ViewStore.createStore()
 
     //region Pesistence
@@ -38,7 +37,6 @@ class AppStore {
     //region Redux glue code
     fun dispatch(action: Any) {
         when (action) {
-            is ClientStore.Action -> client.dispatch(action)
             is ViewStore.Action -> view.dispatch(action)
         }
     }

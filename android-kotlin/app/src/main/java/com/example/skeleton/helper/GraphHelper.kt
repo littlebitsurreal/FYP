@@ -2,6 +2,7 @@ package com.example.skeleton.helper
 
 import android.content.Context
 import android.graphics.Color
+import com.example.skeleton.MainApplication.Companion.store
 import com.example.skeleton.R
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.helper.UsageStatsHelper.HOUR_24
@@ -25,14 +26,22 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import com.github.mikephil.charting.formatter.IValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import java.io.File
+import java.lang.ref.WeakReference
 import java.util.Calendar
 import kotlin.math.roundToInt
 
 @Suppress("MemberVisibilityCanBePrivate")
 object GraphHelper {
-    fun getCumulative(context: Context, filename: String): List<Entry> {
+    private var context: WeakReference<Context>? = null
+    fun setup(c: Context) {
+        context = WeakReference(c)
+    }
+
+    fun getCumulative(filename: String): List<Entry> {
+        val context = context?.get() ?: return listOf()
         val path = File(context.filesDir.path + "/" + filename)
-        val records = CsvHelper.read(path).sortedBy { it.starTime }
+        val ntList = store().view.state.notTrackingList
+        val records = CsvHelper.read(path).filter { !ntList.contains(it.packageName) }.sortedBy { it.starTime }
         if (records.isEmpty()) {
             return listOf()
         }
@@ -55,8 +64,9 @@ object GraphHelper {
         return l.toSortedMap().map { Entry(it.key, it.value) }
     }
 
-    fun updateChart(context: Context, lineChart: LineChart, day: String) {
-        val entries = getCumulative(context, day)
+    fun updateChart(lineChart: LineChart, day: String) {
+        val context = context?.get() ?: return
+        val entries = getCumulative(day)
         if (entries.isEmpty()) {
             return
         }
@@ -74,7 +84,7 @@ object GraphHelper {
             valueFormatter = IValueFormatter { value, entry, dataSetIndex, viewPortHandler -> "" }
         }
         lineChart.data = lineData
-        lineChart.invalidate()
+        lineChart.animateX(50)
     }
 
     fun plotDailyLineChart(context: Context): LineChart {
@@ -114,9 +124,11 @@ object GraphHelper {
         }
     }
 
-    fun get7DaySummary(context: Context, endTime: Long): List<BarEntry> {
+    fun get7DaySummary(endTime: Long): List<BarEntry> {
+        val context = context?.get() ?: return listOf()
         val series = arrayListOf<BarEntry>()
         var i = 1f
+        val ntList = store().view.state.notTrackingList
         for (t in (endTime - 6 * HOUR_24)..endTime step HOUR_24) {
             val d = UsageDigest.loadFiltered(context, CalendarHelper.getDateCondensed(t))
             series.add(BarEntry(i, (d.totalTime ?: 0) / 3600000f))
@@ -125,9 +137,9 @@ object GraphHelper {
         return series
     }
 
-    fun updateChart(context: Context, barChart: BarChart) {
+    fun updateChart(barChart: BarChart) {
         val time = System.currentTimeMillis()
-        val entries = get7DaySummary(context, time)
+        val entries = get7DaySummary(time)
         if (entries.isEmpty()) {
             return
         }
@@ -140,7 +152,7 @@ object GraphHelper {
             }
         }
         barChart.data = barData
-        barChart.invalidate()
+        barChart.animateX(50)
     }
 
     fun plot7DayBarChart(context: Context): BarChart? {

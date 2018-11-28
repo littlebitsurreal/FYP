@@ -199,11 +199,11 @@ class UsageSummaryScreen : BaseController() {
 
                 when (mode) {
                     Mode.Today -> {
-                        list = filter(it, UsageSummary.makeSummary(it, UsageStatsHelper.queryTodayUsage(it)))
+                        list = filter(it, UsageSummary.makeSummary(it, UsageStatsHelper.queryTodayUsage()))
                         unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
                     }
                     Mode.Hour24 -> {
-                        list = filter(it, UsageSummary.makeSummary(it, UsageStatsHelper.query24hUsage(it)))
+                        list = filter(it, UsageSummary.makeSummary(it, UsageStatsHelper.query24hUsage()))
                         unlockCount = ScreenUnlockHelper.getTodayUnlockCount(it)
                     }
                     Mode.Yesterday -> {
@@ -259,7 +259,7 @@ class UsageSummaryScreen : BaseController() {
     }
 
     private val onSummaryClick = View.OnClickListener {
-        mOverlayLayout?.visibility = View.VISIBLE
+        // mOverlayLayout?.visibility = View.VISIBLE
     }
     //endregion
 }

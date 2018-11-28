@@ -13,7 +13,7 @@ class ViewStore {
             val isStrictModeOn: Boolean = false,
             val isForegroundOn: Boolean = false,
             val usageLimit: Int = 30,
-            val isNotTrackingListUpdating: Boolean = false
+            val notTrackingList: List<String> = listOf()
     )
 
     // Actions
@@ -24,7 +24,7 @@ class ViewStore {
         class SetStrictMode(val on: Boolean) : Action()
         class SetForeground(val on: Boolean) : Action()
         class SetUsageLimit(val time: Int) : Action()
-        class UpdateNotTrackingListBegin : Action()
+        class SetNotTrackingList(val list: List<String>) : Action()
         class UpdateNotTrackingListComplete : Action()
     }
 
@@ -73,11 +73,8 @@ class ViewStore {
                 is Action.SetUsageLimit -> {
                     state.copy(usageLimit = action.time)
                 }
-                is Action.UpdateNotTrackingListBegin -> {
-                    state.copy(isNotTrackingListUpdating = true)
-                }
-                is Action.UpdateNotTrackingListComplete -> {
-                    state.copy(isNotTrackingListUpdating = false)
+                is Action.SetNotTrackingList -> {
+                    state.copy(notTrackingList = action.list)
                 }
                 else -> state
             }

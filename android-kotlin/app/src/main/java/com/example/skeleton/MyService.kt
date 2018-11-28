@@ -174,7 +174,7 @@ class MyService : Service() {
             val lock = ReentrantLock()
             override fun run() {
                 if (lock.tryLock()) {
-                    val result = UsageStatsHelper.getLatestEvent(this@MyService, usageStatsManager, mLastQueryTime, System.currentTimeMillis())
+                    val result = UsageStatsHelper.getLatestEvent(usageStatsManager, mLastQueryTime, System.currentTimeMillis())
                     val foregroundEvent = result.foregroundPackageName
 
                     if (result.lastEndTime != 0L) {
@@ -211,7 +211,7 @@ class MyService : Service() {
                 if (!isStrictModeOn) {
                     NotificationHelper.show(
                             this,
-                            "You have used ${PackageHelper.getAppName(this, packageName)} for ${CalendarHelper.toReadableDuration(t)}. ",
+                            "${PackageHelper.getAppName(this, packageName)} - ${CalendarHelper.toReadableDuration(t)}",
                                     "Why not take a break?",
 //                            packageName.hashCode()
                             1
@@ -243,7 +243,7 @@ class MyService : Service() {
     }
 
     private fun loadUsages() {
-        val records = queryTodayUsage(this)
+        val records = queryTodayUsage()
         mTodayUsages = HashMap()
         mToday = CalendarHelper.getDate(System.currentTimeMillis())
         for (r in records) {

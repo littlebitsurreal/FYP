@@ -39,7 +39,7 @@ class UpdateServerTask(val context: Context) : TimerTask() {
 
         for (day in toBeUpdate) {
             val digest = UsageDigest.load(context, day)
-            val summary = UsageStatsHelper.queryUsage(context, day)
+            val summary = UsageStatsHelper.queryUsage(day)
             val jsonArray = JSONArray()
             for (s in summary) {
                 jsonArray.put(s.toJson())

@@ -62,13 +62,13 @@ class UsageSummaryView(context: Context, private var onClick: OnClickListener) :
         background = resources.getDrawable(R.drawable.btn_rounded, null)
         setBackgroundColor(Color.WHITE)
         setPadding(dp(25), dp(12), dp(25), dp(12))
-        elevation = 6f
+        elevation = 4f
 
         setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                v.elevation = 12f
+                v.elevation = 8f
             } else if (event.action == MotionEvent.ACTION_CANCEL || event.action == MotionEvent.ACTION_UP) {
-                v.elevation = 6f
+                v.elevation = 4f
             }
 
             if (event.action == MotionEvent.ACTION_UP) {

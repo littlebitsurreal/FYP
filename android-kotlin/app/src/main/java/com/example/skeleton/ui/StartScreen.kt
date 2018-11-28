@@ -2,7 +2,10 @@ package com.example.skeleton.ui
 
 import android.content.Context
 import android.graphics.Color
-import android.text.SpannableString
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -18,6 +21,7 @@ import com.example.skeleton.helper.ResourceHelper.color
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.redux.ViewStore
 import com.example.skeleton.ui.base.BaseController
+import com.example.skeleton.ui.settings.PrivacyPolicyScreen
 
 class StartScreen : BaseController() {
     //region Lifecycle
@@ -33,7 +37,6 @@ class StartScreen : BaseController() {
         val subtitle = TextView(context)
         val startBtn = Button(context)
         val termsConditions = TextView(context)
-        val spannable = SpannableString("Agree to the Privacy Policy and Terms of Service\n2018 Oskar Chau")
 
         layout.setBackgroundColor(color(R.color.primary))
 
@@ -64,7 +67,16 @@ class StartScreen : BaseController() {
         }
 
         termsConditions.apply {
-            text = spannable
+//            val spannable = SpannableString("Agree to the Privacy Policy and Terms of Service")
+            val stringBuilder = SpannableStringBuilder("Agree to the Privacy Policy and Terms of Service")
+            val clickableSpan = object : ClickableSpan() {
+                override fun onClick(p0: View?) {
+                    pushController(PrivacyPolicyScreen())
+                }
+            }
+            stringBuilder.setSpan(clickableSpan, 13, 27, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            movementMethod = LinkMovementMethod.getInstance()
+            text = stringBuilder
             setTextColor(Color.WHITE)
             id = TERMSCONDITION_ID
             gravity = Gravity.CENTER

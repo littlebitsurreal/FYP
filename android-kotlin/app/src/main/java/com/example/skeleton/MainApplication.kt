@@ -2,7 +2,9 @@ package com.example.skeleton
 
 import android.app.Application
 import android.content.Context
+import com.example.skeleton.helper.GraphHelper
 import com.example.skeleton.helper.ResourceHelper
+import com.example.skeleton.helper.UsageStatsHelper
 import com.example.skeleton.redux.AppStore
 
 class MainApplication : Application() {
@@ -11,6 +13,8 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ResourceHelper.setup(applicationContext)
+        UsageStatsHelper.setup(applicationContext)
+        GraphHelper.setup(applicationContext)
     }
     //---------------------------------------------------------------
     //endregion

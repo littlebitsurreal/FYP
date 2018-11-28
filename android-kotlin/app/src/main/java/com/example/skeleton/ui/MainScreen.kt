@@ -30,6 +30,7 @@ import com.example.skeleton.helper.CalendarHelper
 import com.example.skeleton.helper.GraphHelper
 import com.example.skeleton.helper.GraphHelper.plot7DayBarChart
 import com.example.skeleton.helper.LP
+import com.example.skeleton.helper.Logger
 import com.example.skeleton.helper.ResourceHelper.color
 import com.example.skeleton.helper.ResourceHelper.dp
 import com.example.skeleton.helper.Touchable
@@ -224,7 +225,7 @@ class MainScreen : BaseController() {
         return LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             background = resources.getDrawable(R.drawable.rounded_overview, null)
-            elevation = 10f
+            elevation = 5f
 
             addView(todayOverviewText, LP.linear(LP.WRAP_CONTENT, LP.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL)
                     .setMargins(0, dp(58), 0, dp(5))
@@ -234,9 +235,9 @@ class MainScreen : BaseController() {
 
             setOnTouchListener { v, event ->
                 if (event?.action == MotionEvent.ACTION_DOWN) {
-                    v.elevation = 20f
+                    v.elevation = 15f
                 } else if (event?.action == MotionEvent.ACTION_CANCEL || event?.action == MotionEvent.ACTION_UP) {
-                    v.elevation = 10f
+                    v.elevation = 5f
                 }
                 false
             }
@@ -338,7 +339,7 @@ class MainScreen : BaseController() {
 
     //region UI Events
     private fun updateView() {
-        val usageTime = UsageStatsHelper.getTodayUsageTime(activity ?: return)
+        val usageTime = UsageStatsHelper.getTodayUsageTime(true)
         if (usageTime == mOldTime) return
 
         mOldTime = usageTime
@@ -347,11 +348,12 @@ class MainScreen : BaseController() {
                 setUsage(usageTime)
                 setAverage(usageTime)
                 setYesterday(it)
-                GraphHelper.updateChart(it, mLineChartYesterday
+                GraphHelper.updateChart(mLineChartYesterday
                         ?: return@runOnUiThread, CalendarHelper.getDateCondensed(System.currentTimeMillis() - UsageStatsHelper.HOUR_24))
-                GraphHelper.updateChart(it, mBarChart7Day ?: return@runOnUiThread)
+                GraphHelper.updateChart(mBarChart7Day ?: return@runOnUiThread)
             }
         }
+        Logger.d("text", "update view")
     }
 
     private fun setYesterday(context: Context) {
@@ -402,7 +404,7 @@ class MainScreen : BaseController() {
     }
 
     private fun setAverage(time: Long) {
-        val average = getAverageUsageTime(activity ?: return)
+        val average = getAverageUsageTime(true)
         val span = SpannableString("${if (average == 0L) 100 else time * 100 / average}% of your average")
         span.setSpan(StyleSpan(android.graphics.Typeface.ITALIC), 0, span.length, 0)
         mAverageText?.text = span

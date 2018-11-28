@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.example.skeleton.MainApplication
 import com.example.skeleton.MainApplication.Companion.store
 import com.example.skeleton.R
 import com.example.skeleton.helper.LP
@@ -25,6 +26,7 @@ import com.example.skeleton.widget.NotTrackingListAdapter
 
 class NotTrackingListScreen : BaseController() {
     private var mRecyclerView: RecyclerView? = null
+    private var mNotTrackingRecords: List<NotTrackingRecord>? = null
 
     override fun onCreateView(context: Context): View {
         return setup(context)
@@ -59,6 +61,11 @@ class NotTrackingListScreen : BaseController() {
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             isVerticalScrollBarEnabled = true
+
+            val list = NotTrackingListHelper.getList(context)
+            list.sortedByDescending { it.isIgnored }
+            mNotTrackingRecords = list
+            mRecyclerView?.adapter = NotTrackingListAdapter(list, onCheckChange)
         }
 
         layout.apply {
@@ -70,24 +77,6 @@ class NotTrackingListScreen : BaseController() {
         return layout
     }
 
-    override fun onAttach(view: View) {
-        super.onAttach(view)
-        activity?.let {
-            Thread {
-                val list = NotTrackingListHelper.getList(it)
-                list.sortedByDescending { it.isIgnored }
-                it.runOnUiThread {
-                    mRecyclerView?.adapter = NotTrackingListAdapter(list, onCheckChange)
-                }
-            }.start()
-        }
-    }
-
-    override fun onDetach(view: View) {
-        super.onDetach(view)
-        store().dispatch(ViewStore.Action.UpdateNotTrackingListBegin())
-    }
-
     private val onBackClick = View.OnClickListener {
         popController()
     }
@@ -96,11 +85,15 @@ class NotTrackingListScreen : BaseController() {
             { record: NotTrackingRecord, isChecked: Boolean ->
                 activity?.let {
                     record.isIgnored = isChecked
+
                     if (isChecked) {
                         NotTrackingListHelper.addRecords(it, listOf(record))
                     } else {
                         NotTrackingListHelper.removeRecords(it, listOf(record))
                     }
+
+                    val l = NotTrackingListHelper.loadNotTrackingList(applicationContext ?: return@let)
+                    MainApplication.store().dispatch(ViewStore.Action.SetNotTrackingList(l))
                 }
             }
 

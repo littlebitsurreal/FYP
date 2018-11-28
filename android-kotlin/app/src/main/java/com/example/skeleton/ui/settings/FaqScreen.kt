@@ -36,17 +36,14 @@ class FaqScreen : BaseController() {
                     "Q2: Why I can't see my recent records when I haven't opened my app for a few days?\n" +
                     "A: Please turn off 'App Optimisation' for this app. It sometimes prevent this app from working.\n" +
                     "\n" +
-                    "Q2: I turned off 'App Optimisation', but it is still not working?\n" +
-                    "A: Please enable Notification Bar for stability.\n" +
+                    "Q3: I turned off 'App Optimisation', but it is still not working?\n" +
+                    "A: Enable Notification Bar for stability.\n" +
                     "\n" +
-                    "Q3: What if I don't want to track my productivity apps?\n" +
+                    "Q4: What if I don't want to track my productivity apps?\n" +
                     "A: Go to 'Setting' --> 'Not Tracking List' and choose apps you don't want to track.\n" +
                     "\n" +
-                    "Q4: I found a bug. What can I do?\n" +
+                    "Q5: I found a bug. What can I do?\n" +
                     "A: Please feel free to email me. You can find my contact in 'About This App'.\n" +
-                    "\nQ1: OUASFH?\n" +
-                    "ASOUAGSFO\n" +
-                    "\n" +
                     "\n"
         }
 
