@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Usage Monitor</string>
+    <string name="app_name">H-Our</string>
     <string name="splash_title">Loading</string>
     <string name="login_title">Login</string>
     <string name="login_submit">Submit</string>

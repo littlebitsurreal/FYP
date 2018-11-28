@@ -1,5 +1,5 @@
 <resources>
-
+    
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
@@ -7,29 +7,10 @@
         <item name="colorPrimaryDark">@color/dark</item>
         <item name="colorAccent">@color/accent</item>
     </style>
-
+    
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-    
-    <!-- Transparent Window Activity -->
-    <style name="AppTheme.TransparentWindow" parent="Theme.AppCompat.Light.NoActionBar">
-        <!--
-        We want the translucent background painted by the root layout instead
-        of painted by the window.
-        -->
-        <item name="android:windowIsTranslucent">true</item>
-        
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
     </style>
 
 </resources>
