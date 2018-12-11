@@ -107,8 +107,8 @@ object GraphHelper {
                 setLabelCount(5, false)
                 valueFormatter = IAxisValueFormatter { value, _ ->
                     if (value == 0f) "0"
-                    else if (value > 1 && (value + 0.03) % 1 < 0.06) String.format("%dh", value.roundToInt())
-                    else if (value > 1) String.format("%dh%02dm", value.toInt(), (((value - value.toInt()) * 60)).roundToInt())
+                    else if (value > .98 && (value + 0.02) % 1 < 0.04) String.format("%dh", value.roundToInt())
+                    else if (value > .98) String.format("%dh%02dm", value.toInt(), (((value - value.toInt()) * 60)).roundToInt())
                     else String.format("%dm", ((value - value.toInt()) * 60).roundToInt())
                 }
                 axisLineWidth = 3f
@@ -176,8 +176,8 @@ object GraphHelper {
                 textSize = 13f
                 valueFormatter = IAxisValueFormatter { value, _ ->
                     if (value == 0f) "0"
-                    else if (value > 1 && (value + 0.03) % 1 < 0.06) String.format("%dh", value.roundToInt())
-                    else if (value > 1) String.format("%dh%02dm", value.toInt(), (((value - value.toInt()) * 60)).roundToInt())
+                    else if (value > .98 && (value + 0.02) % 1 < 0.04) String.format("%dh", value.roundToInt())
+                    else if (value > .98) String.format("%dh%02dm", value.toInt(), (((value - value.toInt()) * 60)).roundToInt())
                     else String.format("%dm", ((value - value.toInt()) * 60).roundToInt())
                 }
             }
