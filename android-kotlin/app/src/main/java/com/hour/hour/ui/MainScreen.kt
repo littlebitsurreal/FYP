@@ -42,6 +42,7 @@ import com.hour.hour.redux.ViewStore
 import com.hour.hour.ui.settings.SettingScreen
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
+import com.hour.hour.helper.CalendarHelper.toReadableDuration
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Consumer
 import io.reactivex.functions.Function
@@ -405,7 +406,11 @@ class MainScreen : BaseController() {
 
     private fun setAverage(time: Long) {
         val average = getAverageUsageTime(true)
-        val span = SpannableString("${if (average == 0L) 100 else time * 100 / average}% of your average")
+//        val span = SpannableString("${if (average == 0L) 100 else time * 100 / average}% of your average")
+        val span = SpannableString(
+                if (time >= average) "${toReadableDuration(time - average)} above your average"
+                else "${toReadableDuration(average - time)} to your average"
+        )
         span.setSpan(StyleSpan(android.graphics.Typeface.ITALIC), 0, span.length, 0)
         mAverageText?.text = span
         if (time >= average && average != 0L) {
