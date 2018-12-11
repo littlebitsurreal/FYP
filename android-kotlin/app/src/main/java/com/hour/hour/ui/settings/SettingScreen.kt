@@ -201,7 +201,7 @@ class SettingScreen : BaseController() {
 
             mForegroundSwitch = switch
             title.text = "Notification Bar"
-            content.text = "Turn this on if the app is not working properly."
+            content.text = "Turn this on for stability and better performance."
             switch.setOnCheckedChangeListener(onForegroundSwitchChange)
             setOnTouchListener(onForegroundTouch)
 
